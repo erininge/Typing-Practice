@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="meta">
-      <span class="pill">v1.2.4</span>
+      <span class="pill">v1.2.5</span>
       <span class="pill">build b2c1f7d4aa</span>
     </div>
   </header>
@@ -38,7 +38,7 @@
 
       <div class="hint">
         <p><strong>How it works:</strong> by default this game listens for your <em>physical key</em> (e.g., <code>KeyA</code>) and translates it into kana using the keyboard map you pick. That means it works even if your IME is set to Romaji.</p>
-        <p class="small">Prefer real IME input? Switch <strong>Input mode</strong> to <em>Native keyboard</em> in Settings and the app will use your actual typed characters instead of the mapping.</p>
+        <p class="small">Text-box modes (Typing/Words/Sentences) always use your normal typed characters. The <strong>Input mode</strong> setting only affects the single-kana practice mode.</p>
       </div>
     </section>
 
@@ -95,7 +95,7 @@
         <div class="typingLine" id="typingTarget"></div>
         <div class="typingLine typed" id="typingTyped"></div>
         <input class="typingLine typed input typingInputField" id="typingInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type here..." />
-        <div class="small muted">Type the kana stream using your selected input mode. Backspace works.</div>
+        <div class="small muted">Type in the box like a normal text field (your OS/IME input). Mistakes highlight in the passage.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Time</div><div class="v" id="tTime">—</div></div>
@@ -142,7 +142,7 @@
         <div class="typingLine" id="wordTarget">—</div>
         <div class="typingLine typed" id="wordTyped"></div>
         <input class="typingLine typed input typingInputField" id="wordInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the word..." />
-        <div class="small muted" id="wordHint">Type the word. It won’t advance until you hit the correct key (wrong keys will highlight red on the target line).</div>
+        <div class="small muted" id="wordHint">Type the word in the text box. Mistakes highlight red on the target line; fix them to advance.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Words</div><div class="v" id="wDone">0</div></div>
@@ -192,7 +192,7 @@
         <div class="typingLine" id="sentenceTarget">—</div>
         <div class="typingLine typed" id="sentenceTyped"></div>
         <input class="typingLine typed input typingInputField" id="sentenceInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the sentence..." />
-        <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space). Wrong keys will highlight red on the passage.</div>
+        <div class="small muted" id="sentenceHint">Type the sentence in the text box. Spaces are optional (you can press Space to match a space). Mistakes highlight red on the passage; fix them to advance.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Sentences</div><div class="v" id="sDone">0</div></div>
