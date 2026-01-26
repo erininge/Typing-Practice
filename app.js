@@ -344,7 +344,7 @@
     });
   }
 
-  function renderPassage(el, target, typedValue, wrongIndex) {
+  function renderPassage(el, target, progressIndex, wrongIndices = new Set(), correctIndices = new Set()) {
     el.innerHTML = "";
     if (!target) {
       el.textContent = "—";
@@ -354,9 +354,9 @@
       const ch = target[i];
       const span = document.createElement("span");
       span.className = "passageChar";
-      if (i < typedValue.length) span.classList.add("correct");
-      if (wrongIndex === i) span.classList.add("wrong");
-      if (i === typedValue.length && wrongIndex == null) span.classList.add("current");
+      if (correctIndices.has(i)) span.classList.add("correct");
+      if (wrongIndices.has(i)) span.classList.add("wrong");
+      if (i === progressIndex && !wrongIndices.has(i)) span.classList.add("current");
       span.textContent = ch;
       el.appendChild(span);
     }
@@ -364,33 +364,39 @@
 
   function evaluateInput(target, input, allowSkipSpaces = false) {
     let ti = 0;
-    let ii = 0;
-    let matchedTarget = 0;
-    let matchedInput = 0;
-    let wrongIndex = null;
-    while (ii < input.length && ti < target.length) {
-      const targetChar = target[ti];
+    const correctIndices = new Set();
+    const wrongIndices = new Set();
+    const inputToTarget = [];
+
+    for (let ii = 0; ii < input.length && ti < target.length; ii += 1) {
       const inputChar = input[ii];
-      if (allowSkipSpaces && targetChar === " ") {
-        if (inputChar === " ") {
-          ii += 1;
-          matchedInput += 1;
+      if (allowSkipSpaces) {
+        while (ti < target.length && target[ti] === " " && inputChar !== " ") {
+          correctIndices.add(ti);
+          ti += 1;
         }
-        ti += 1;
-        matchedTarget += 1;
+      }
+      if (ti >= target.length) {
+        inputToTarget[ii] = null;
         continue;
       }
-      if (inputChar === targetChar) {
-        ii += 1;
-        ti += 1;
-        matchedInput += 1;
-        matchedTarget += 1;
+      inputToTarget[ii] = ti;
+      if (inputChar === target[ti]) {
+        correctIndices.add(ti);
       } else {
-        wrongIndex = ti;
-        break;
+        wrongIndices.add(ti);
+      }
+      ti += 1;
+    }
+
+    if (allowSkipSpaces) {
+      while (ti < target.length && target[ti] === " ") {
+        correctIndices.add(ti);
+        ti += 1;
       }
     }
-    return { matchedTarget, matchedInput, wrongIndex };
+
+    return { correctIndices, wrongIndices, nextTargetIndex: ti, inputToTarget };
   }
 
   // ---- Practice mode ----
@@ -474,7 +480,8 @@
   let typed = "";
   let typingInput = "";
   let typingMatched = 0;
-  let typingWrongIndex = null;
+  let typingWrongIndices = new Set();
+  let typingCorrectIndices = new Set();
   let tCorrect = 0, tWrong = 0;
   let tStart = 0;
   let tTimerId = null;
@@ -482,7 +489,7 @@
 
   function setTypingUI() {
     if (typingTarget) {
-      renderPassage($("#typingTarget"), typingTarget, typed, typingWrongIndex);
+      renderPassage($("#typingTarget"), typingTarget, typed.length, typingWrongIndices, typingCorrectIndices);
     } else {
       $("#typingTarget").textContent = "—";
     }
@@ -541,7 +548,8 @@
     typed = "";
     typingInput = "";
     typingMatched = 0;
-    typingWrongIndex = null;
+    typingWrongIndices = new Set();
+    typingCorrectIndices = new Set();
     tCorrect = 0; tWrong = 0;
     tStart = Date.now();
     setTypingUI();
@@ -577,23 +585,24 @@
 
 
 
-  // ---- Word & Sentence practice (step-through typing, no advance on wrong key) ----
+  // ---- Word & Sentence practice (type in a normal text box, highlight mistakes) ----
   let wordOn = false, sentenceOn = false;
   let wordTarget = "", wordTyped = "";
   let wDone=0, wCorrect=0, wWrong=0;
-  let wordWrongIndex = null;
+  let wordWrongIndices = new Set();
+  let wordCorrectIndices = new Set();
   let wordInput = "";
   let wordMatched = 0;
 
   let sentenceTarget = "", sentenceTyped = "";
   let sDone=0, sCorrect=0, sWrong=0;
-  let sentenceWrongIndex = null;
+  let sentenceWrongIndices = new Set();
+  let sentenceCorrectIndices = new Set();
   let sentenceInput = "";
   let sentenceMatched = 0;
-  let sentenceMatchedInput = 0;
 
   function setWordUI() {
-    renderPassage($("#wordTarget"), wordTarget, wordTyped, wordWrongIndex);
+    renderPassage($("#wordTarget"), wordTarget, wordTyped.length, wordWrongIndices, wordCorrectIndices);
     $("#wordTyped").textContent = wordTyped || "";
     const wordInputEl = $("#wordInput");
     if (wordInputEl.value !== wordInput) wordInputEl.value = wordInput;
@@ -604,7 +613,7 @@
     $("#wAcc").textContent = total ? `${Math.round((wCorrect/total)*100)}%` : "—";
   }
   function setSentenceUI() {
-    renderPassage($("#sentenceTarget"), sentenceTarget, sentenceTyped, sentenceWrongIndex);
+    renderPassage($("#sentenceTarget"), sentenceTarget, sentenceTyped.length, sentenceWrongIndices, sentenceCorrectIndices);
     $("#sentenceTyped").textContent = sentenceTyped || "";
     const sentenceInputEl = $("#sentenceInput");
     if (sentenceInputEl.value !== sentenceInput) sentenceInputEl.value = sentenceInput;
@@ -635,14 +644,16 @@
       wordTarget = "";
       for (let i=0;i<len;i++) wordTarget += pool[Math.floor(Math.random()*pool.length)];
       wordTyped = "";
-      wordWrongIndex = null;
+      wordWrongIndices = new Set();
+      wordCorrectIndices = new Set();
     } else {
       candidates = WORD_LISTS.basic.slice();
       candidates = candidates.filter(w => w.length <= maxLen);
       if (!candidates.length) candidates = WORD_LISTS.basic;
       wordTarget = candidates[Math.floor(Math.random()*candidates.length)];
       wordTyped = "";
-      wordWrongIndex = null;
+      wordWrongIndices = new Set();
+      wordCorrectIndices = new Set();
     }
     wordInput = "";
     wordMatched = 0;
@@ -655,10 +666,10 @@
     const candidates = (SENTENCE_LISTS[list] || SENTENCE_LISTS.basic).slice();
     sentenceTarget = candidates[Math.floor(Math.random()*candidates.length)];
     sentenceTyped = "";
-    sentenceWrongIndex = null;
+    sentenceWrongIndices = new Set();
+    sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
-    sentenceMatchedInput = 0;
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
   }
@@ -666,7 +677,8 @@
   $("#btnWordStart").addEventListener("click", () => {
     wordOn = true; sentenceOn = false; practiceOn = false; typingOn = false;
     wDone=0; wCorrect=0; wWrong=0;
-    wordWrongIndex = null;
+    wordWrongIndices = new Set();
+    wordCorrectIndices = new Set();
     wordInput = "";
     wordMatched = 0;
     pendingDiacritic = null;
@@ -683,7 +695,8 @@
     $("#btnWordStart").disabled = false;
     $("#btnWordStop").disabled = true;
     wordTarget = ""; wordTyped = "";
-    wordWrongIndex = null;
+    wordWrongIndices = new Set();
+    wordCorrectIndices = new Set();
     wordInput = "";
     wordMatched = 0;
     $("#wordInput").disabled = true;
@@ -694,10 +707,10 @@
   $("#btnSentenceStart").addEventListener("click", () => {
     sentenceOn = true; wordOn = false; practiceOn = false; typingOn = false;
     sDone=0; sCorrect=0; sWrong=0;
-    sentenceWrongIndex = null;
+    sentenceWrongIndices = new Set();
+    sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
-    sentenceMatchedInput = 0;
     pendingDiacritic = null;
     $("#btnSentenceStart").disabled = true;
     $("#btnSentenceStop").disabled = false;
@@ -712,10 +725,10 @@
     $("#btnSentenceStart").disabled = false;
     $("#btnSentenceStop").disabled = true;
     sentenceTarget = ""; sentenceTyped = "";
-    sentenceWrongIndex = null;
+    sentenceWrongIndices = new Set();
+    sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
-    sentenceMatchedInput = 0;
     $("#sentenceInput").disabled = true;
     buildKeyboard($("#keyboardSentence"), null);
     setSentenceUI();
@@ -747,33 +760,34 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = typingInput;
-    const prevMatched = typingMatched;
-    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(typingTarget, value);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(typingTarget, value);
 
     typingInput = value;
-    typingMatched = matchedTarget;
-    typingWrongIndex = wrongIndex;
-    typed = typingTarget.slice(0, matchedTarget);
+    typingMatched = nextTargetIndex;
+    typingWrongIndices = wrongIndices;
+    typingCorrectIndices = correctIndices;
+    typed = typingTarget.slice(0, nextTargetIndex);
 
     const added = Math.max(0, value.length - prevValue.length);
-    const deltaCorrect = Math.max(0, matchedInput - prevMatched);
     if (added > 0) {
-      if (deltaCorrect > 0) {
-        tCorrect += deltaCorrect;
-        applyCorrectStats(typingTarget.slice(prevMatched, prevMatched + deltaCorrect));
-      }
-      const deltaWrong = Math.max(0, added - deltaCorrect);
-      if (deltaWrong > 0) {
-        tWrong += deltaWrong;
-        const expected = typingTarget.charAt(wrongIndex ?? matchedTarget);
-        applyWrongStats(expected, deltaWrong);
+      for (let i = prevValue.length; i < value.length; i += 1) {
+        const targetIndex = inputToTarget[i];
+        if (targetIndex == null) continue;
+        const expected = typingTarget.charAt(targetIndex);
+        if (value[i] === expected) {
+          tCorrect += 1;
+          applyCorrectStats(expected);
+        } else {
+          tWrong += 1;
+          applyWrongStats(expected, 1);
+        }
       }
       saveJSON(STORAGE.stats, stats);
     }
 
     buildKeyboard($("#keyboard2"), nextNeededCode());
     setTypingUI();
-    if (typingMatched >= typingTarget.length) stopTyping();
+    if (typingWrongIndices.size === 0 && typingMatched >= typingTarget.length) stopTyping();
   }
 
   function handleWordInputChange() {
@@ -783,33 +797,34 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = wordInput;
-    const prevMatched = wordMatched;
-    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(wordTarget, value);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(wordTarget, value);
 
     wordInput = value;
-    wordMatched = matchedTarget;
-    wordWrongIndex = wrongIndex;
-    wordTyped = wordTarget.slice(0, matchedTarget);
+    wordMatched = nextTargetIndex;
+    wordWrongIndices = wrongIndices;
+    wordCorrectIndices = correctIndices;
+    wordTyped = wordTarget.slice(0, nextTargetIndex);
 
     const added = Math.max(0, value.length - prevValue.length);
-    const deltaCorrect = Math.max(0, matchedInput - prevMatched);
     if (added > 0) {
-      if (deltaCorrect > 0) {
-        wCorrect += deltaCorrect;
-        stats.word.correct += deltaCorrect;
-        applyCorrectStats(wordTarget.slice(prevMatched, prevMatched + deltaCorrect));
-      }
-      const deltaWrong = Math.max(0, added - deltaCorrect);
-      if (deltaWrong > 0) {
-        wWrong += deltaWrong;
-        stats.word.wrong += deltaWrong;
-        const expected = wordTarget.charAt(wrongIndex ?? matchedTarget);
-        applyWrongStats(expected, deltaWrong);
+      for (let i = prevValue.length; i < value.length; i += 1) {
+        const targetIndex = inputToTarget[i];
+        if (targetIndex == null) continue;
+        const expected = wordTarget.charAt(targetIndex);
+        if (value[i] === expected) {
+          wCorrect += 1;
+          stats.word.correct += 1;
+          applyCorrectStats(expected);
+        } else {
+          wWrong += 1;
+          stats.word.wrong += 1;
+          applyWrongStats(expected, 1);
+        }
       }
       saveJSON(STORAGE.stats, stats);
     }
 
-    if (wordMatched >= wordTarget.length) {
+    if (wordWrongIndices.size === 0 && wordMatched >= wordTarget.length) {
       wDone += 1;
       stats.word.words += 1;
       pickWord();
@@ -827,34 +842,34 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = sentenceInput;
-    const prevMatchedInput = sentenceMatchedInput;
-    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(sentenceTarget, value, true);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(sentenceTarget, value, true);
 
     sentenceInput = value;
-    sentenceMatched = matchedTarget;
-    sentenceMatchedInput = matchedInput;
-    sentenceWrongIndex = wrongIndex;
-    sentenceTyped = sentenceTarget.slice(0, matchedTarget);
+    sentenceMatched = nextTargetIndex;
+    sentenceWrongIndices = wrongIndices;
+    sentenceCorrectIndices = correctIndices;
+    sentenceTyped = sentenceTarget.slice(0, nextTargetIndex);
 
     const added = Math.max(0, value.length - prevValue.length);
-    const deltaCorrect = Math.max(0, matchedInput - prevMatchedInput);
     if (added > 0) {
-      if (deltaCorrect > 0) {
-        sCorrect += deltaCorrect;
-        stats.sentence.correct += deltaCorrect;
-        applyCorrectStats(value.slice(prevMatchedInput, prevMatchedInput + deltaCorrect));
-      }
-      const deltaWrong = Math.max(0, added - deltaCorrect);
-      if (deltaWrong > 0) {
-        sWrong += deltaWrong;
-        stats.sentence.wrong += deltaWrong;
-        const expected = sentenceTarget.charAt(wrongIndex ?? matchedTarget);
-        applyWrongStats(expected, deltaWrong);
+      for (let i = prevValue.length; i < value.length; i += 1) {
+        const targetIndex = inputToTarget[i];
+        if (targetIndex == null) continue;
+        const expected = sentenceTarget.charAt(targetIndex);
+        if (value[i] === expected) {
+          sCorrect += 1;
+          stats.sentence.correct += 1;
+          applyCorrectStats(expected);
+        } else {
+          sWrong += 1;
+          stats.sentence.wrong += 1;
+          applyWrongStats(expected, 1);
+        }
       }
       saveJSON(STORAGE.stats, stats);
     }
 
-    if (sentenceMatched >= sentenceTarget.length) {
+    if (sentenceWrongIndices.size === 0 && sentenceMatched >= sentenceTarget.length) {
       sDone += 1;
       stats.sentence.sentences += 1;
       pickSentence();
