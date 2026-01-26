@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="meta">
-      <span class="pill">v1.2.0</span>
-      <span class="pill">build 5852a7f6ce</span>
+      <span class="pill">v1.2.1</span>
+      <span class="pill">build 6b4f9e1a2d</span>
     </div>
   </header>
 
@@ -37,8 +37,8 @@
       </div>
 
       <div class="hint">
-        <p><strong>How it works:</strong> this game listens for your <em>physical key</em> (e.g., <code>KeyA</code>) and translates it into kana using the keyboard map you pick. That means it works even if your IME is set to Romaji.</p>
-        <p class="small">Tip: if you want it to feel “real”, set your input source to Japanese Kana — but you don’t have to.</p>
+        <p><strong>How it works:</strong> by default this game listens for your <em>physical key</em> (e.g., <code>KeyA</code>) and translates it into kana using the keyboard map you pick. That means it works even if your IME is set to Romaji.</p>
+        <p class="small">Prefer real IME input? Switch <strong>Input mode</strong> to <em>Native keyboard</em> in Settings and the app will use your actual typed characters instead of the mapping.</p>
       </div>
     </section>
 
@@ -94,7 +94,7 @@
       <div class="typingPanel">
         <div class="typingLine" id="typingTarget"></div>
         <div class="typingLine typed" id="typingTyped"></div>
-        <div class="small muted">Type the kana stream using your physical keys. Backspace works.</div>
+        <div class="small muted">Type the kana stream using your selected input mode. Backspace works.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Time</div><div class="v" id="tTime">—</div></div>
@@ -140,7 +140,7 @@
       <div class="typingPanel">
         <div class="typingLine" id="wordTarget">—</div>
         <div class="typingLine typed" id="wordTyped"></div>
-        <div class="small muted" id="wordHint">Type the word using your physical keys. It won’t advance until you hit the correct key.</div>
+        <div class="small muted" id="wordHint">Type the word. It won’t advance until you hit the correct key (wrong keys will flash red on the target line).</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Words</div><div class="v" id="wDone">0</div></div>
@@ -189,7 +189,7 @@
       <div class="typingPanel">
         <div class="typingLine" id="sentenceTarget">—</div>
         <div class="typingLine typed" id="sentenceTyped"></div>
-        <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space).</div>
+        <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space). Wrong keys will highlight red on the passage.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Sentences</div><div class="v" id="sDone">0</div></div>
@@ -264,10 +264,26 @@
         </label>
 
         <label class="field">
+          <span>Input mode</span>
+          <select id="inputModeSelect">
+            <option value="mapped">Mapped key codes (use app keyboard map)</option>
+            <option value="native">Native keyboard input (use your OS/IME)</option>
+          </select>
+        </label>
+
+        <label class="field">
           <span>Audio (TTS)</span>
           <select id="ttsSelect">
             <option value="off">Off</option>
             <option value="on">On (speak kana on new target)</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>On-screen keyboard</span>
+          <select id="keyboardToggle">
+            <option value="on">Show</option>
+            <option value="off">Hide</option>
           </select>
         </label>
 
