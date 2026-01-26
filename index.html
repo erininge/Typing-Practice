@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="meta">
-      <span class="pill">v1.2.7</span>
-      <span class="pill">build 8f4a7c1d6b</span>
+      <span class="pill">v1.2.8</span>
+      <span class="pill">build practice update</span>
     </div>
   </header>
 
@@ -48,6 +48,7 @@
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnPracticeStart">Start</button>
+          <button class="btn" id="btnPracticePause" disabled>Pause</button>
           <button class="btn" id="btnPracticeStop" disabled>Stop</button>
         </div>
       </div>
@@ -56,6 +57,7 @@
         <div class="bigTarget" id="targetKana">—</div>
         <div class="sub" id="targetHint">Press the key for this kana</div>
         <div class="feedback" id="feedback"></div>
+        <input class="practiceInput" id="practiceInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Practice input" />
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Streak</div><div class="v" id="streak">0</div></div>
@@ -87,6 +89,7 @@
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnTypingStart">Start</button>
+          <button class="btn" id="btnTypingPause" disabled>Pause</button>
           <button class="btn" id="btnTypingStop" disabled>Stop</button>
         </div>
       </div>
@@ -95,7 +98,7 @@
         <div class="typingLine" id="typingTarget"></div>
         <div class="typingLine typed" id="typingTyped"></div>
         <input class="typingLine typed input typingInputField" id="typingInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type here..." />
-        <div class="small muted">Type in the box like a normal text field (your OS/IME input). Mistakes highlight in the passage.</div>
+        <div class="small muted">Press Start to begin. The timer starts only after you press Start. Type in the box like a normal text field (your OS/IME input). Mistakes highlight in the passage.</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Time</div><div class="v" id="tTime">—</div></div>
@@ -134,6 +137,7 @@
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnWordStart">Start</button>
+          <button class="btn" id="btnWordPause" disabled>Pause</button>
           <button class="btn" id="btnWordStop" disabled>Stop</button>
         </div>
       </div>
@@ -184,6 +188,7 @@
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnSentenceStart">Start</button>
+          <button class="btn" id="btnSentencePause" disabled>Pause</button>
           <button class="btn" id="btnSentenceStop" disabled>Stop</button>
         </div>
       </div>
@@ -278,6 +283,14 @@
           <select id="keyboardToggle">
             <option value="on">Show</option>
             <option value="off">Hide</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Typing timer</span>
+          <select id="typingTimerToggle">
+            <option value="on">Enabled</option>
+            <option value="off">Disabled</option>
           </select>
         </label>
       </div>
