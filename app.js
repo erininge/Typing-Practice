@@ -573,6 +573,7 @@
   let typingMatched = 0;
   let typingWrongIndices = new Set();
   let typingCorrectIndices = new Set();
+  let suppressTypingInput = false;
   let tCorrect = 0, tWrong = 0;
   let tStart = 0;
   let tElapsedMs = 0;
@@ -627,6 +628,7 @@
     if (!typingPaused) tElapsedMs = Date.now() - tStart;
     typingOn = false;
     typingPaused = false;
+    suppressTypingInput = false;
     clearInterval(tTimerId);
     tTimerId = null;
     $("#btnTypingStart").disabled = false;
@@ -668,8 +670,9 @@
     typingMatched = 0;
     typingWrongIndices = new Set();
     typingCorrectIndices = new Set();
+    suppressTypingInput = true;
     const inputEl = $("#typingInput");
-    if (inputEl.value !== "") inputEl.value = "";
+    if (inputEl.value !== "") resetTextInput(inputEl);
     buildKeyboard($("#keyboard2"), nextNeededCode());
     setTypingUI();
   }
@@ -693,6 +696,7 @@
     typingMatched = 0;
     typingWrongIndices = new Set();
     typingCorrectIndices = new Set();
+    suppressTypingInput = false;
     tCorrect = 0; tWrong = 0;
     tStart = Date.now();
     tElapsedMs = 0;
@@ -1023,6 +1027,12 @@
   function handleTypingInputChange() {
     if (!typingOn || typingPaused) return;
     const inputEl = $("#typingInput");
+    if (suppressTypingInput) {
+      suppressTypingInput = false;
+      if (typingInput === "") resetTextInput(inputEl);
+      else if (inputEl.value !== typingInput) inputEl.value = typingInput;
+      return;
+    }
     let value = clampInputToTarget(inputEl.value, typingTarget);
     if (value !== inputEl.value) inputEl.value = value;
 
