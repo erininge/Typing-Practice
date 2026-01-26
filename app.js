@@ -293,12 +293,12 @@
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
 
   // ---- Build practicing pool ----
-  function getPool() {
+  function getPool({ useMap = false } = {}) {
     const pool = [];
     for (const s of SETS) {
       if (enabledSets[s.id]) pool.push(...s.items);
     }
-    if (opts.inputMode === "native") return pool;
+    if (!useMap || opts.inputMode === "native") return pool;
     // Filter to only kana that exist in current map
     const kanaInMap = new Set(Object.values(map).filter(Boolean));
     const filtered = pool.filter(k => kanaInMap.has(k));
@@ -362,6 +362,37 @@
     }
   }
 
+  function evaluateInput(target, input, allowSkipSpaces = false) {
+    let ti = 0;
+    let ii = 0;
+    let matchedTarget = 0;
+    let matchedInput = 0;
+    let wrongIndex = null;
+    while (ii < input.length && ti < target.length) {
+      const targetChar = target[ti];
+      const inputChar = input[ii];
+      if (allowSkipSpaces && targetChar === " ") {
+        if (inputChar === " ") {
+          ii += 1;
+          matchedInput += 1;
+        }
+        ti += 1;
+        matchedTarget += 1;
+        continue;
+      }
+      if (inputChar === targetChar) {
+        ii += 1;
+        ti += 1;
+        matchedInput += 1;
+        matchedTarget += 1;
+      } else {
+        wrongIndex = ti;
+        break;
+      }
+    }
+    return { matchedTarget, matchedInput, wrongIndex };
+  }
+
   // ---- Practice mode ----
   let practiceOn = false;
   let targetKana = null;
@@ -370,7 +401,7 @@
   let pendingDiacritic = null;
 
   function pickTarget() {
-    const pool = getPool();
+    const pool = getPool({ useMap: opts.inputMode !== "native" });
     targetKana = pool[Math.floor(Math.random() * pool.length)];
     targetCode = Object.keys(map).find(code => map[code] === targetKana) || null;
     $("#targetKana").textContent = targetKana || "—";
@@ -442,15 +473,22 @@
   let typingTarget = "";
   let typed = "";
   let typingInput = "";
+  let typingMatched = 0;
+  let typingWrongIndex = null;
   let tCorrect = 0, tWrong = 0;
   let tStart = 0;
   let tTimerId = null;
   let tLimit = 60;
 
   function setTypingUI() {
-    $("#typingTarget").textContent = typingTarget || "—";
+    if (typingTarget) {
+      renderPassage($("#typingTarget"), typingTarget, typed, typingWrongIndex);
+    } else {
+      $("#typingTarget").textContent = "—";
+    }
     $("#typingTyped").textContent = typed || "";
-    $("#typingInput").textContent = typingInput || "—";
+    const typingInputEl = $("#typingInput");
+    if (typingInputEl.value !== typingInput) typingInputEl.value = typingInput;
     $("#tCorrect").textContent = String(tCorrect);
     $("#tWrong").textContent = String(tWrong);
     if (!typingOn) {
@@ -472,6 +510,7 @@
     tTimerId = null;
     $("#btnTypingStart").disabled = false;
     $("#btnTypingStop").disabled = true;
+    $("#typingInput").disabled = true;
 
     const dtMin = (Date.now() - tStart) / 60000;
     const kpm = dtMin > 0 ? Math.round((tCorrect / dtMin)) : 0;
@@ -501,16 +540,22 @@
     typingTarget = makeKanaStream(len);
     typed = "";
     typingInput = "";
+    typingMatched = 0;
+    typingWrongIndex = null;
     tCorrect = 0; tWrong = 0;
     tStart = Date.now();
     setTypingUI();
 
     $("#btnTypingStart").disabled = true;
     $("#btnTypingStop").disabled = false;
+    $("#typingInput").disabled = false;
+    $("#wordInput").disabled = true;
+    $("#sentenceInput").disabled = true;
 
     buildKeyboard($("#keyboard2"), nextNeededCode());
     tickTypingTimer();
     tTimerId = setInterval(tickTypingTimer, 250);
+    $("#typingInput").focus();
   });
 
   $("#btnTypingStop").addEventListener("click", () => stopTyping());
@@ -522,28 +567,6 @@
     const nk = nextNeededKana();
     if (!nk) return null;
     return Object.keys(map).find(code => map[code] === nk) || null;
-  }
-
-  function typingKey(kana, pressedCode) {
-    if (!typingOn) return;
-    if (!kana) return;
-
-    const need = nextNeededKana();
-    flashKey(pressedCode);
-
-    if (kana === need) {
-      typed += kana;
-      tCorrect += 1;
-      ensureKanaStat(kana).c += 1;
-      // advance highlight
-      buildKeyboard($("#keyboard2"), nextNeededCode());
-      if (typed.length >= typingTarget.length) stopTyping();
-    } else {
-      tWrong += 1;
-      ensureKanaStat(need || kana).w += 1;
-    }
-    saveJSON(STORAGE.stats, stats);
-    setTypingUI();
   }
 
   function clampInt(v, min, max) {
@@ -560,16 +583,20 @@
   let wDone=0, wCorrect=0, wWrong=0;
   let wordWrongIndex = null;
   let wordInput = "";
+  let wordMatched = 0;
 
   let sentenceTarget = "", sentenceTyped = "";
   let sDone=0, sCorrect=0, sWrong=0;
   let sentenceWrongIndex = null;
   let sentenceInput = "";
+  let sentenceMatched = 0;
+  let sentenceMatchedInput = 0;
 
   function setWordUI() {
     renderPassage($("#wordTarget"), wordTarget, wordTyped, wordWrongIndex);
     $("#wordTyped").textContent = wordTyped || "";
-    $("#wordInput").textContent = wordInput || "—";
+    const wordInputEl = $("#wordInput");
+    if (wordInputEl.value !== wordInput) wordInputEl.value = wordInput;
     $("#wDone").textContent = String(wDone);
     $("#wCorrect").textContent = String(wCorrect);
     $("#wWrong").textContent = String(wWrong);
@@ -579,7 +606,8 @@
   function setSentenceUI() {
     renderPassage($("#sentenceTarget"), sentenceTarget, sentenceTyped, sentenceWrongIndex);
     $("#sentenceTyped").textContent = sentenceTyped || "";
-    $("#sentenceInput").textContent = sentenceInput || "—";
+    const sentenceInputEl = $("#sentenceInput");
+    if (sentenceInputEl.value !== sentenceInput) sentenceInputEl.value = sentenceInput;
     $("#sDone").textContent = String(sDone);
     $("#sCorrect").textContent = String(sCorrect);
     $("#sWrong").textContent = String(sWrong);
@@ -610,17 +638,14 @@
       wordWrongIndex = null;
     } else {
       candidates = WORD_LISTS.basic.slice();
-      // filter to mapped kana only (unless native input mode)
-      if (opts.inputMode !== "native") {
-        const kanaInMap = new Set(Object.values(map).filter(Boolean));
-        candidates = candidates.filter(w => [...w].every(ch => kanaInMap.has(ch)));
-      }
       candidates = candidates.filter(w => w.length <= maxLen);
       if (!candidates.length) candidates = WORD_LISTS.basic;
       wordTarget = candidates[Math.floor(Math.random()*candidates.length)];
       wordTyped = "";
       wordWrongIndex = null;
     }
+    wordInput = "";
+    wordMatched = 0;
     buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
     setWordUI();
   }
@@ -628,16 +653,12 @@
   function pickSentence() {
     const list = ($("#sentenceListSelect").value || "basic");
     const candidates = (SENTENCE_LISTS[list] || SENTENCE_LISTS.basic).slice();
-    let use = candidates;
-    if (opts.inputMode !== "native") {
-      const kanaInMap = new Set(Object.values(map).filter(Boolean));
-      // allow spaces in sentence; filter other chars
-      const filtered = candidates.filter(s => [...s].every(ch => ch === " " || kanaInMap.has(ch)));
-      use = filtered.length ? filtered : candidates;
-    }
-    sentenceTarget = use[Math.floor(Math.random()*use.length)];
+    sentenceTarget = candidates[Math.floor(Math.random()*candidates.length)];
     sentenceTyped = "";
     sentenceWrongIndex = null;
+    sentenceInput = "";
+    sentenceMatched = 0;
+    sentenceMatchedInput = 0;
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
   }
@@ -647,10 +668,15 @@
     wDone=0; wCorrect=0; wWrong=0;
     wordWrongIndex = null;
     wordInput = "";
+    wordMatched = 0;
     pendingDiacritic = null;
     $("#btnWordStart").disabled = true;
     $("#btnWordStop").disabled = false;
+    $("#wordInput").disabled = false;
+    $("#typingInput").disabled = true;
+    $("#sentenceInput").disabled = true;
     pickWord();
+    $("#wordInput").focus();
   });
   $("#btnWordStop").addEventListener("click", () => {
     wordOn = false;
@@ -659,6 +685,8 @@
     wordTarget = ""; wordTyped = "";
     wordWrongIndex = null;
     wordInput = "";
+    wordMatched = 0;
+    $("#wordInput").disabled = true;
     buildKeyboard($("#keyboardWord"), null);
     setWordUI();
   });
@@ -668,10 +696,16 @@
     sDone=0; sCorrect=0; sWrong=0;
     sentenceWrongIndex = null;
     sentenceInput = "";
+    sentenceMatched = 0;
+    sentenceMatchedInput = 0;
     pendingDiacritic = null;
     $("#btnSentenceStart").disabled = true;
     $("#btnSentenceStop").disabled = false;
+    $("#sentenceInput").disabled = false;
+    $("#typingInput").disabled = true;
+    $("#wordInput").disabled = true;
     pickSentence();
+    $("#sentenceInput").focus();
   });
   $("#btnSentenceStop").addEventListener("click", () => {
     sentenceOn = false;
@@ -680,80 +714,155 @@
     sentenceTarget = ""; sentenceTyped = "";
     sentenceWrongIndex = null;
     sentenceInput = "";
+    sentenceMatched = 0;
+    sentenceMatchedInput = 0;
+    $("#sentenceInput").disabled = true;
     buildKeyboard($("#keyboardSentence"), null);
     setSentenceUI();
   });
 
-  function handleStepPractice(mode, pressedKana, pressedCode) {
-    if (mode === "word") {
-      const need = nextChar(wordTarget, wordTyped);
-      if (!need) return;
-      if (pressedKana === need) {
-        wordTyped += need;
-        wCorrect += 1;
-        wordWrongIndex = null;
-        ensureKanaStat(need).c += 1;
-        stats.word.correct += 1;
-        if (wordTyped.length >= wordTarget.length) {
-          wDone += 1;
-          stats.word.words += 1;
-          pickWord();
-        } else {
-          buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
-          setWordUI();
-        }
-      } else {
-        wWrong += 1;
-        wordWrongIndex = wordTyped.length;
-        ensureKanaStat(need).w += 1;
-        stats.word.wrong += 1;
-        // keep same target; just flash
-        buildKeyboard($("#keyboardWord"), codeForKanaChar(need));
-        setWordUI();
-      }
-      saveJSON(STORAGE.stats, stats);
-    } else if (mode === "sentence") {
-      const need = nextChar(sentenceTarget, sentenceTyped);
-      if (!need) return;
-      // Spaces are optional: if need is space, user can either press space OR type the next kana directly.
-      if (need === " " && pressedKana !== " ") {
-        // treat as skip-space attempt: evaluate against next non-space char
-        const nextNonSpace = sentenceTarget.charAt(sentenceTyped.length + 1) || null;
-        if (pressedKana === nextNonSpace) {
-          sentenceTyped += " " + nextNonSpace;
-          sCorrect += 1;
-          sentenceWrongIndex = null;
-          ensureKanaStat(nextNonSpace).c += 1;
-          stats.sentence.correct += 1;
-        } else {
-          sWrong += 1;
-          sentenceWrongIndex = sentenceTyped.length;
-          ensureKanaStat(nextNonSpace || pressedKana || " ").w += 1;
-          stats.sentence.wrong += 1;
-        }
-      } else if (pressedKana === need) {
-        sentenceTyped += need;
-        sCorrect += 1;
-        sentenceWrongIndex = null;
-        if (need !== " ") ensureKanaStat(need).c += 1;
-        stats.sentence.correct += 1;
-      } else {
-        sWrong += 1;
-        sentenceWrongIndex = sentenceTyped.length;
-        if (need !== " ") ensureKanaStat(need).w += 1;
-        stats.sentence.wrong += 1;
-      }
+  function clampInputToTarget(input, target) {
+    if (input.length <= target.length) return input;
+    return input.slice(0, target.length);
+  }
 
-      if (sentenceTyped.length >= sentenceTarget.length) {
-        sDone += 1;
-        stats.sentence.sentences += 1;
-        pickSentence();
-      } else {
-        buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
-        setSentenceUI();
+  function applyCorrectStats(chars) {
+    for (const ch of chars) {
+      if (!ch || ch === " ") continue;
+      ensureKanaStat(ch).c += 1;
+    }
+  }
+
+  function applyWrongStats(char, count) {
+    if (!char || char === " ") return;
+    for (let i = 0; i < count; i += 1) {
+      ensureKanaStat(char).w += 1;
+    }
+  }
+
+  function handleTypingInputChange() {
+    if (!typingOn) return;
+    const inputEl = $("#typingInput");
+    let value = clampInputToTarget(inputEl.value, typingTarget);
+    if (value !== inputEl.value) inputEl.value = value;
+
+    const prevValue = typingInput;
+    const prevMatched = typingMatched;
+    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(typingTarget, value);
+
+    typingInput = value;
+    typingMatched = matchedTarget;
+    typingWrongIndex = wrongIndex;
+    typed = typingTarget.slice(0, matchedTarget);
+
+    const added = Math.max(0, value.length - prevValue.length);
+    const deltaCorrect = Math.max(0, matchedInput - prevMatched);
+    if (added > 0) {
+      if (deltaCorrect > 0) {
+        tCorrect += deltaCorrect;
+        applyCorrectStats(typingTarget.slice(prevMatched, prevMatched + deltaCorrect));
+      }
+      const deltaWrong = Math.max(0, added - deltaCorrect);
+      if (deltaWrong > 0) {
+        tWrong += deltaWrong;
+        const expected = typingTarget.charAt(wrongIndex ?? matchedTarget);
+        applyWrongStats(expected, deltaWrong);
       }
       saveJSON(STORAGE.stats, stats);
     }
+
+    buildKeyboard($("#keyboard2"), nextNeededCode());
+    setTypingUI();
+    if (typingMatched >= typingTarget.length) stopTyping();
+  }
+
+  function handleWordInputChange() {
+    if (!wordOn) return;
+    const inputEl = $("#wordInput");
+    let value = clampInputToTarget(inputEl.value, wordTarget);
+    if (value !== inputEl.value) inputEl.value = value;
+
+    const prevValue = wordInput;
+    const prevMatched = wordMatched;
+    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(wordTarget, value);
+
+    wordInput = value;
+    wordMatched = matchedTarget;
+    wordWrongIndex = wrongIndex;
+    wordTyped = wordTarget.slice(0, matchedTarget);
+
+    const added = Math.max(0, value.length - prevValue.length);
+    const deltaCorrect = Math.max(0, matchedInput - prevMatched);
+    if (added > 0) {
+      if (deltaCorrect > 0) {
+        wCorrect += deltaCorrect;
+        stats.word.correct += deltaCorrect;
+        applyCorrectStats(wordTarget.slice(prevMatched, prevMatched + deltaCorrect));
+      }
+      const deltaWrong = Math.max(0, added - deltaCorrect);
+      if (deltaWrong > 0) {
+        wWrong += deltaWrong;
+        stats.word.wrong += deltaWrong;
+        const expected = wordTarget.charAt(wrongIndex ?? matchedTarget);
+        applyWrongStats(expected, deltaWrong);
+      }
+      saveJSON(STORAGE.stats, stats);
+    }
+
+    if (wordMatched >= wordTarget.length) {
+      wDone += 1;
+      stats.word.words += 1;
+      pickWord();
+      $("#wordInput").focus();
+      return;
+    }
+    buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
+    setWordUI();
+  }
+
+  function handleSentenceInputChange() {
+    if (!sentenceOn) return;
+    const inputEl = $("#sentenceInput");
+    let value = clampInputToTarget(inputEl.value, sentenceTarget);
+    if (value !== inputEl.value) inputEl.value = value;
+
+    const prevValue = sentenceInput;
+    const prevMatchedInput = sentenceMatchedInput;
+    const { matchedTarget, matchedInput, wrongIndex } = evaluateInput(sentenceTarget, value, true);
+
+    sentenceInput = value;
+    sentenceMatched = matchedTarget;
+    sentenceMatchedInput = matchedInput;
+    sentenceWrongIndex = wrongIndex;
+    sentenceTyped = sentenceTarget.slice(0, matchedTarget);
+
+    const added = Math.max(0, value.length - prevValue.length);
+    const deltaCorrect = Math.max(0, matchedInput - prevMatchedInput);
+    if (added > 0) {
+      if (deltaCorrect > 0) {
+        sCorrect += deltaCorrect;
+        stats.sentence.correct += deltaCorrect;
+        applyCorrectStats(value.slice(prevMatchedInput, prevMatchedInput + deltaCorrect));
+      }
+      const deltaWrong = Math.max(0, added - deltaCorrect);
+      if (deltaWrong > 0) {
+        sWrong += deltaWrong;
+        stats.sentence.wrong += deltaWrong;
+        const expected = sentenceTarget.charAt(wrongIndex ?? matchedTarget);
+        applyWrongStats(expected, deltaWrong);
+      }
+      saveJSON(STORAGE.stats, stats);
+    }
+
+    if (sentenceMatched >= sentenceTarget.length) {
+      sDone += 1;
+      stats.sentence.sentences += 1;
+      pickSentence();
+      $("#sentenceInput").focus();
+      return;
+    }
+    buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
+    setSentenceUI();
   }
 
   function processInput(kana, code) {
@@ -766,52 +875,6 @@
       }
       const ok = opts.inputMode === "native" ? (kana === targetKana) : (code === targetCode);
       markPractice(ok, code, kana);
-    } else if (typingOn) {
-      typingKey(kana, code);
-    } else if (wordOn) {
-      handleStepPractice("word", kana, code);
-    } else if (sentenceOn) {
-      handleStepPractice("sentence", kana, code);
-    }
-  }
-
-  function appendInputDisplay(kana) {
-    if (typingOn) {
-      typingInput += kana;
-    } else if (wordOn) {
-      wordInput += kana;
-    } else if (sentenceOn) {
-      sentenceInput += kana;
-    }
-  }
-
-  function replaceLastInputDisplay(kana) {
-    if (typingOn && typingInput.length) {
-      typingInput = typingInput.slice(0, -1) + kana;
-    } else if (wordOn && wordInput.length) {
-      wordInput = wordInput.slice(0, -1) + kana;
-    } else if (sentenceOn && sentenceInput.length) {
-      sentenceInput = sentenceInput.slice(0, -1) + kana;
-    }
-  }
-
-  function popInputDisplay() {
-    if (typingOn && typingInput.length) {
-      typingInput = typingInput.slice(0, -1);
-    } else if (wordOn && wordInput.length) {
-      wordInput = wordInput.slice(0, -1);
-    } else if (sentenceOn && sentenceInput.length) {
-      sentenceInput = sentenceInput.slice(0, -1);
-    }
-  }
-
-  function updateActiveInputUI() {
-    if (typingOn) {
-      setTypingUI();
-    } else if (wordOn) {
-      setWordUI();
-    } else if (sentenceOn) {
-      setSentenceUI();
     }
   }
 
@@ -820,36 +883,13 @@
     // Don't hijack browser shortcuts
     if (e.metaKey || e.ctrlKey) return;
 
+    if (typingOn || wordOn || sentenceOn) return;
+
     const code = e.code;
 
-    // Allow backspace in typing/word/sentence
-    if ((typingOn || wordOn || sentenceOn) && code === "Backspace") {
+    if (code === "Backspace" && pendingDiacritic) {
       e.preventDefault();
-      if (pendingDiacritic) {
-        pendingDiacritic = null;
-        popInputDisplay();
-        updateActiveInputUI();
-        return;
-      }
       pendingDiacritic = null;
-      if (typingOn) {
-        if (typed.length) typed = typed.slice(0, -1);
-        popInputDisplay();
-        buildKeyboard($("#keyboard2"), nextNeededCode());
-        setTypingUI();
-      } else if (wordOn) {
-        if (wordTyped.length) wordTyped = wordTyped.slice(0, -1);
-        popInputDisplay();
-        wordWrongIndex = null;
-        buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
-        setWordUI();
-      } else if (sentenceOn) {
-        if (sentenceTyped.length) sentenceTyped = sentenceTyped.slice(0, -1);
-        popInputDisplay();
-        sentenceWrongIndex = null;
-        buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
-        setSentenceUI();
-      }
       return;
     }
 
@@ -876,27 +916,20 @@
     if (opts.inputMode !== "native") {
       const expectedKana = getExpectedKana();
       const isDiacritic = inputKana === "゛" || inputKana === "゜";
-      let displayHandled = false;
 
       if (pendingDiacritic) {
         if (isDiacritic) {
           const combined = combineDiacritic(pendingDiacritic.kana, inputKana);
           if (combined) {
             inputKana = combined;
-            replaceLastInputDisplay(combined);
             pendingDiacritic = null;
-            displayHandled = true;
           } else {
             processInput(pendingDiacritic.kana, pendingDiacritic.code);
             pendingDiacritic = null;
-            appendInputDisplay(inputKana);
-            displayHandled = true;
           }
         } else {
           processInput(pendingDiacritic.kana, pendingDiacritic.code);
           pendingDiacritic = null;
-          appendInputDisplay(inputKana);
-          displayHandled = true;
         }
       }
 
@@ -904,21 +937,21 @@
         const expectedParts = expectedKana ? decomposeVoiced(expectedKana) : null;
         if (expectedParts && expectedParts.base === inputKana) {
           pendingDiacritic = { kana: inputKana, code };
-          appendInputDisplay(inputKana);
           flashKey(code);
-          updateActiveInputUI();
           return;
         }
       }
-      if (!displayHandled) {
-        appendInputDisplay(inputKana);
-      }
-    } else {
-      appendInputDisplay(inputKana);
     }
 
     processInput(inputKana, code);
   });
+
+  $("#typingInput").addEventListener("input", handleTypingInputChange);
+  $("#wordInput").addEventListener("input", handleWordInputChange);
+  $("#sentenceInput").addEventListener("input", handleSentenceInputChange);
+  $("#typingInput").disabled = true;
+  $("#wordInput").disabled = true;
+  $("#sentenceInput").disabled = true;
 
   // ---- Settings UI ----
   function renderSettings() {
