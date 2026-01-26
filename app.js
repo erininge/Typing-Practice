@@ -242,7 +242,8 @@
   const defaultOpts = () => ({
     layout: "jis",
     inputMode: "native",
-    showKeyboard: true
+    showKeyboard: true,
+    typingTimerEnabled: true
   });
 
   function loadJSON(key, fallback) {
@@ -258,6 +259,7 @@
   // normalize older saved options
   if (!opts.inputMode || !["native", "mapped"].includes(opts.inputMode)) opts.inputMode = "native";
   if (typeof opts.showKeyboard !== "boolean") opts.showKeyboard = true;
+  if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
   let stats = loadJSON(STORAGE.stats, {
@@ -288,14 +290,14 @@
     });
     if (id === "settings") renderSettings();
     if (id === "stats") renderStats();
-    if (["home", "settings", "stats"].includes(id)) {
+    if (id === "home") {
       stopAllModes({ recordTyping: false });
       return;
     }
-    if (id === "practice") startPractice();
-    if (id === "word") startWord();
-    if (id === "sentence") startSentence();
-    if (id === "typing") startTyping();
+    if (["settings", "stats"].includes(id)) {
+      pauseAllModes();
+      return;
+    }
   }
 
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
@@ -439,6 +441,7 @@
 
   // ---- Practice mode ----
   let practiceOn = false;
+  let practicePaused = false;
   let targetKana = null;
   let targetCode = null;
   let streak = 0, correct=0, wrong=0;
@@ -466,32 +469,67 @@
     if (practiceOn) return;
     stopAllModes({ recordTyping: false });
     practiceOn = true;
+    practicePaused = false;
     streak = 0; correct = 0; wrong = 0;
     pendingDiacritic = null;
     updatePracticeStats();
     pickTarget();
     $("#btnPracticeStart").disabled = true;
+    $("#btnPracticePause").disabled = false;
     $("#btnPracticeStop").disabled = false;
+    $("#practiceInput").disabled = opts.inputMode !== "native";
+    if (opts.inputMode === "native") $("#practiceInput").focus();
   }
 
   function stopPractice() {
     if (!practiceOn) return;
     practiceOn = false;
+    practicePaused = false;
     $("#btnPracticeStart").disabled = false;
+    $("#btnPracticePause").disabled = true;
     $("#btnPracticeStop").disabled = true;
+    $("#practiceInput").disabled = true;
     $("#feedback").textContent = "Stopped.";
     $("#feedback").className = "feedback";
     buildKeyboard($("#keyboard"), null);
     $("#targetKana").textContent = "—";
   }
 
-  $("#btnPracticeStart").addEventListener("click", () => startPractice());
+  function pausePractice() {
+    if (!practiceOn || practicePaused) return;
+    practicePaused = true;
+    $("#practiceInput").disabled = true;
+    $("#btnPracticeStart").disabled = false;
+    $("#btnPracticePause").disabled = true;
+    $("#feedback").textContent = "Paused.";
+    $("#feedback").className = "feedback";
+  }
+
+  function resumePractice() {
+    if (!practiceOn || !practicePaused) return;
+    practicePaused = false;
+    $("#practiceInput").disabled = opts.inputMode !== "native";
+    $("#btnPracticeStart").disabled = true;
+    $("#btnPracticePause").disabled = false;
+    $("#feedback").textContent = "";
+    $("#feedback").className = "feedback";
+    if (opts.inputMode === "native") $("#practiceInput").focus();
+  }
+
+  $("#btnPracticeStart").addEventListener("click", () => {
+    if (practiceOn && practicePaused) {
+      resumePractice();
+      return;
+    }
+    startPractice();
+  });
+  $("#btnPracticePause").addEventListener("click", () => pausePractice());
   $("#btnPracticeStop").addEventListener("click", () => stopPractice());
 
   function markPractice(correctHit, pressedCode, inputKana) {
     const fb = $("#feedback");
     const gotKana = map[pressedCode] || "—";
-    flashKey(pressedCode);
+    if (pressedCode) flashKey(pressedCode);
     const displayKey = opts.inputMode === "native" ? (inputKana || "—") : pressedCode;
     const displayKana = opts.inputMode === "native" ? (inputKana || "—") : gotKana;
 
@@ -525,8 +563,16 @@
     stopTyping(recordTyping);
   }
 
+  function pauseAllModes() {
+    pausePractice();
+    pauseWord();
+    pauseSentence();
+    pauseTyping();
+  }
+
   // ---- Typing mode ----
   let typingOn = false;
+  let typingPaused = false;
   let typingTarget = "";
   let typed = "";
   let typingInput = "";
@@ -535,9 +581,22 @@
   let typingCorrectIndices = new Set();
   let tCorrect = 0, tWrong = 0;
   let tStart = 0;
+  let tElapsedMs = 0;
   let tTimerId = null;
   let tLimit = 60;
   let typingLength = 60;
+
+  function getTypingElapsedMs() {
+    if (!typingOn) return tElapsedMs;
+    if (typingPaused) return tElapsedMs;
+    return Date.now() - tStart;
+  }
+
+  function getTypingRemainingSeconds() {
+    if (!opts.typingTimerEnabled) return null;
+    const remaining = Math.max(0, Math.round((tLimit * 1000 - getTypingElapsedMs()) / 1000));
+    return remaining;
+  }
 
   function setTypingUI() {
     if (typingTarget) {
@@ -551,9 +610,15 @@
     $("#tCorrect").textContent = String(tCorrect);
     $("#tWrong").textContent = String(tWrong);
     if (!typingOn) {
-      $("#tTime").textContent = "—";
+      $("#tTime").textContent = opts.typingTimerEnabled ? "—" : "∞";
       $("#tKpm").textContent = "—";
+      return;
     }
+    const remaining = getTypingRemainingSeconds();
+    $("#tTime").textContent = remaining === null ? "∞" : `${remaining}s`;
+    const dtMin = getTypingElapsedMs() / 60000;
+    const kpm = dtMin > 0 ? Math.round((tCorrect / dtMin)) : 0;
+    $("#tKpm").textContent = typingPaused ? "—" : String(kpm);
   }
 
   function makeKanaStream(n) {
@@ -565,17 +630,21 @@
 
   function stopTyping(recordStats = true) {
     if (!typingOn) return;
+    if (!typingPaused) tElapsedMs = Date.now() - tStart;
     typingOn = false;
+    typingPaused = false;
     clearInterval(tTimerId);
     tTimerId = null;
     $("#btnTypingStart").disabled = false;
+    $("#btnTypingPause").disabled = true;
     $("#btnTypingStop").disabled = true;
     $("#typingInput").disabled = true;
 
-    const dtMin = (Date.now() - tStart) / 60000;
+    const dtMin = tElapsedMs / 60000;
     const kpm = dtMin > 0 ? Math.round((tCorrect / dtMin)) : 0;
-    $("#tTime").textContent = `${Math.max(0, Math.round((tLimit*1000 - (Date.now()-tStart))/1000))}s`;
-    $("#tKpm").textContent = String(kpm);
+    const remaining = getTypingRemainingSeconds();
+    $("#tTime").textContent = remaining === null ? "∞" : `${remaining}s`;
+    $("#tKpm").textContent = opts.typingTimerEnabled ? String(kpm) : (dtMin > 0 ? String(kpm) : "—");
 
     if (recordStats) {
       stats.typing.runs += 1;
@@ -585,9 +654,14 @@
   }
 
   function tickTypingTimer() {
-    const remaining = Math.max(0, Math.round((tLimit*1000 - (Date.now()-tStart))/1000));
+    if (!typingOn || typingPaused) return;
+    const remaining = getTypingRemainingSeconds();
+    if (remaining === null) {
+      setTypingUI();
+      return;
+    }
     $("#tTime").textContent = `${remaining}s`;
-    const dtMin = (Date.now() - tStart) / 60000;
+    const dtMin = getTypingElapsedMs() / 60000;
     const kpm = dtMin > 0 ? Math.round((tCorrect / dtMin)) : 0;
     $("#tKpm").textContent = typingOn ? String(kpm) : "—";
     if (remaining <= 0) stopTyping(true);
@@ -607,12 +681,17 @@
   }
 
   function startTyping() {
+    if (typingOn && typingPaused) {
+      resumeTyping();
+      return;
+    }
     if (typingOn) return;
     stopAllModes({ recordTyping: false });
     typingLength = clampInt($("#tLen").value, 10, 300);
     tLimit = clampInt($("#tTimer").value, 10, 600);
 
     typingOn = true;
+    typingPaused = false;
     pendingDiacritic = null;
     typingTarget = makeKanaStream(typingLength);
     typed = "";
@@ -622,9 +701,11 @@
     typingCorrectIndices = new Set();
     tCorrect = 0; tWrong = 0;
     tStart = Date.now();
+    tElapsedMs = 0;
     setTypingUI();
 
     $("#btnTypingStart").disabled = true;
+    $("#btnTypingPause").disabled = false;
     $("#btnTypingStop").disabled = false;
     $("#typingInput").disabled = false;
     $("#wordInput").disabled = true;
@@ -632,12 +713,41 @@
 
     buildKeyboard($("#keyboard2"), nextNeededCode());
     tickTypingTimer();
-    tTimerId = setInterval(tickTypingTimer, 250);
+    if (opts.typingTimerEnabled) {
+      tTimerId = setInterval(tickTypingTimer, 250);
+    }
     $("#typingInput").focus();
   }
 
   $("#btnTypingStart").addEventListener("click", () => startTyping());
+  $("#btnTypingPause").addEventListener("click", () => pauseTyping());
   $("#btnTypingStop").addEventListener("click", () => stopTyping(true));
+
+  function pauseTyping() {
+    if (!typingOn || typingPaused) return;
+    typingPaused = true;
+    tElapsedMs = Date.now() - tStart;
+    clearInterval(tTimerId);
+    tTimerId = null;
+    $("#typingInput").disabled = true;
+    $("#btnTypingStart").disabled = false;
+    $("#btnTypingPause").disabled = true;
+    setTypingUI();
+  }
+
+  function resumeTyping() {
+    if (!typingOn || !typingPaused) return;
+    typingPaused = false;
+    tStart = Date.now() - tElapsedMs;
+    $("#typingInput").disabled = false;
+    $("#btnTypingStart").disabled = true;
+    $("#btnTypingPause").disabled = false;
+    if (opts.typingTimerEnabled) {
+      tTimerId = setInterval(tickTypingTimer, 250);
+    }
+    $("#typingInput").focus();
+    setTypingUI();
+  }
 
   function nextNeededKana() {
     return typingTarget.charAt(typed.length) || null;
@@ -658,6 +768,8 @@
 
   // ---- Word & Sentence practice (type in a normal text box, highlight mistakes) ----
   let wordOn = false, sentenceOn = false;
+  let wordPaused = false;
+  let sentencePaused = false;
   let wordTarget = "", wordTyped = "";
   let wDone=0, wCorrect=0, wWrong=0;
   let wordWrongIndices = new Set();
@@ -731,7 +843,7 @@
     wordInput = "";
     wordMatched = 0;
     const wordInputEl = $("#wordInput");
-    if (wordInputEl.value !== "") wordInputEl.value = "";
+    if (wordInputEl.value !== "") resetTextInput(wordInputEl);
     buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
     setWordUI();
   }
@@ -746,15 +858,20 @@
     sentenceInput = "";
     sentenceMatched = 0;
     const sentenceInputEl = $("#sentenceInput");
-    if (sentenceInputEl.value !== "") sentenceInputEl.value = "";
+    if (sentenceInputEl.value !== "") resetTextInput(sentenceInputEl);
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
   }
 
   function startWord() {
+    if (wordOn && wordPaused) {
+      resumeWord();
+      return;
+    }
     if (wordOn) return;
     stopAllModes({ recordTyping: false });
     wordOn = true; sentenceOn = false; practiceOn = false; typingOn = false;
+    wordPaused = false;
     wDone=0; wCorrect=0; wWrong=0;
     wordWrongIndices = new Set();
     wordCorrectIndices = new Set();
@@ -763,6 +880,7 @@
     suppressWordInput = false;
     pendingDiacritic = null;
     $("#btnWordStart").disabled = true;
+    $("#btnWordPause").disabled = false;
     $("#btnWordStop").disabled = false;
     $("#wordInput").disabled = false;
     $("#typingInput").disabled = true;
@@ -774,7 +892,9 @@
   function stopWord() {
     if (!wordOn) return;
     wordOn = false;
+    wordPaused = false;
     $("#btnWordStart").disabled = false;
+    $("#btnWordPause").disabled = true;
     $("#btnWordStop").disabled = true;
     wordTarget = ""; wordTyped = "";
     wordWrongIndices = new Set();
@@ -788,9 +908,14 @@
   }
 
   function startSentence() {
+    if (sentenceOn && sentencePaused) {
+      resumeSentence();
+      return;
+    }
     if (sentenceOn) return;
     stopAllModes({ recordTyping: false });
     sentenceOn = true; wordOn = false; practiceOn = false; typingOn = false;
+    sentencePaused = false;
     sDone=0; sCorrect=0; sWrong=0;
     sentenceWrongIndices = new Set();
     sentenceCorrectIndices = new Set();
@@ -799,6 +924,7 @@
     suppressSentenceInput = false;
     pendingDiacritic = null;
     $("#btnSentenceStart").disabled = true;
+    $("#btnSentencePause").disabled = false;
     $("#btnSentenceStop").disabled = false;
     $("#sentenceInput").disabled = false;
     $("#typingInput").disabled = true;
@@ -810,7 +936,9 @@
   function stopSentence() {
     if (!sentenceOn) return;
     sentenceOn = false;
+    sentencePaused = false;
     $("#btnSentenceStart").disabled = false;
+    $("#btnSentencePause").disabled = true;
     $("#btnSentenceStop").disabled = true;
     sentenceTarget = ""; sentenceTyped = "";
     sentenceWrongIndices = new Set();
@@ -823,10 +951,46 @@
     setSentenceUI();
   }
 
+  function pauseWord() {
+    if (!wordOn || wordPaused) return;
+    wordPaused = true;
+    $("#wordInput").disabled = true;
+    $("#btnWordStart").disabled = false;
+    $("#btnWordPause").disabled = true;
+  }
+
+  function resumeWord() {
+    if (!wordOn || !wordPaused) return;
+    wordPaused = false;
+    $("#wordInput").disabled = false;
+    $("#btnWordStart").disabled = true;
+    $("#btnWordPause").disabled = false;
+    $("#wordInput").focus();
+  }
+
+  function pauseSentence() {
+    if (!sentenceOn || sentencePaused) return;
+    sentencePaused = true;
+    $("#sentenceInput").disabled = true;
+    $("#btnSentenceStart").disabled = false;
+    $("#btnSentencePause").disabled = true;
+  }
+
+  function resumeSentence() {
+    if (!sentenceOn || !sentencePaused) return;
+    sentencePaused = false;
+    $("#sentenceInput").disabled = false;
+    $("#btnSentenceStart").disabled = true;
+    $("#btnSentencePause").disabled = false;
+    $("#sentenceInput").focus();
+  }
+
   $("#btnWordStart").addEventListener("click", () => startWord());
+  $("#btnWordPause").addEventListener("click", () => pauseWord());
   $("#btnWordStop").addEventListener("click", () => stopWord());
 
   $("#btnSentenceStart").addEventListener("click", () => startSentence());
+  $("#btnSentencePause").addEventListener("click", () => pauseSentence());
   $("#btnSentenceStop").addEventListener("click", () => stopSentence());
 
   function maxInputLengthForTarget(target) {
@@ -841,6 +1005,11 @@
     const maxLen = maxInputLengthForTarget(target);
     if (input.length <= maxLen) return input;
     return input.slice(0, maxLen);
+  }
+
+  function resetTextInput(inputEl) {
+    inputEl.value = "";
+    inputEl.setSelectionRange(0, 0);
   }
 
   function applyCorrectStats(chars) {
@@ -858,7 +1027,7 @@
   }
 
   function handleTypingInputChange() {
-    if (!typingOn) return;
+    if (!typingOn || typingPaused) return;
     const inputEl = $("#typingInput");
     let value = clampInputToTarget(inputEl.value, typingTarget);
     if (value !== inputEl.value) inputEl.value = value;
@@ -899,11 +1068,12 @@
   }
 
   function handleWordInputChange() {
-    if (!wordOn) return;
+    if (!wordOn || wordPaused) return;
     const inputEl = $("#wordInput");
     if (suppressWordInput) {
       suppressWordInput = false;
-      if (inputEl.value !== wordInput) inputEl.value = wordInput;
+      if (wordInput === "") resetTextInput(inputEl);
+      else if (inputEl.value !== wordInput) inputEl.value = wordInput;
       return;
     }
     let value = clampInputToTarget(inputEl.value, wordTarget);
@@ -943,6 +1113,7 @@
       wDone += 1;
       stats.word.words += 1;
       suppressWordInput = true;
+      resetTextInput(inputEl);
       pickWord();
       $("#wordInput").focus();
       return;
@@ -952,11 +1123,12 @@
   }
 
   function handleSentenceInputChange() {
-    if (!sentenceOn) return;
+    if (!sentenceOn || sentencePaused) return;
     const inputEl = $("#sentenceInput");
     if (suppressSentenceInput) {
       suppressSentenceInput = false;
-      if (inputEl.value !== sentenceInput) inputEl.value = sentenceInput;
+      if (sentenceInput === "") resetTextInput(inputEl);
+      else if (inputEl.value !== sentenceInput) inputEl.value = sentenceInput;
       return;
     }
     let value = clampInputToTarget(inputEl.value, sentenceTarget);
@@ -996,6 +1168,7 @@
       sDone += 1;
       stats.sentence.sentences += 1;
       suppressSentenceInput = true;
+      resetTextInput(inputEl);
       pickSentence();
       $("#sentenceInput").focus();
       return;
@@ -1007,6 +1180,7 @@
   function processInput(kana, code) {
     if (!kana) return;
     if (practiceOn) {
+      if (practicePaused) return;
       if (!targetKana || (opts.inputMode !== "native" && !targetCode)) {
         // If targetCode missing (not in map), just pick another
         pickTarget();
@@ -1023,6 +1197,7 @@
     if (e.metaKey || e.ctrlKey) return;
 
     if (typingOn || wordOn || sentenceOn) return;
+    if (opts.inputMode === "native") return;
 
     const code = e.code;
 
@@ -1085,18 +1260,33 @@
     processInput(inputKana, code);
   });
 
+  $("#practiceInput").addEventListener("input", () => {
+    if (!practiceOn || practicePaused) return;
+    if (opts.inputMode !== "native") return;
+    const inputEl = $("#practiceInput");
+    const value = inputEl.value;
+    if (!value) return;
+    for (const ch of value) {
+      processInput(ch, "");
+    }
+    inputEl.value = "";
+  });
+
   $("#typingInput").addEventListener("input", handleTypingInputChange);
   $("#wordInput").addEventListener("input", handleWordInputChange);
   $("#sentenceInput").addEventListener("input", handleSentenceInputChange);
   $("#typingInput").disabled = true;
   $("#wordInput").disabled = true;
   $("#sentenceInput").disabled = true;
+  $("#practiceInput").disabled = true;
 
   // ---- Settings UI ----
   function renderSettings() {
     $("#layoutSelect").value = opts.layout || "jis";
     $("#inputModeSelect").value = opts.inputMode || "mapped";
     $("#keyboardToggle").value = opts.showKeyboard ? "on" : "off";
+    $("#typingTimerToggle").value = opts.typingTimerEnabled ? "on" : "off";
+    $("#tTimer").disabled = !opts.typingTimerEnabled;
 
     renderMapTable();
     renderSets();
@@ -1120,12 +1310,31 @@
   $("#inputModeSelect").addEventListener("change", (e) => {
     opts.inputMode = e.target.value;
     saveJSON(STORAGE.opts, opts);
+    if (practiceOn && !practicePaused) {
+      $("#practiceInput").disabled = opts.inputMode !== "native";
+      if (opts.inputMode === "native") $("#practiceInput").focus();
+    }
   });
 
   $("#keyboardToggle").addEventListener("change", (e) => {
     opts.showKeyboard = e.target.value === "on";
     saveJSON(STORAGE.opts, opts);
     applyKeyboardVisibility();
+  });
+
+  $("#typingTimerToggle").addEventListener("change", (e) => {
+    opts.typingTimerEnabled = e.target.value === "on";
+    saveJSON(STORAGE.opts, opts);
+    $("#tTimer").disabled = !opts.typingTimerEnabled;
+    if (typingOn && !typingPaused) {
+      if (opts.typingTimerEnabled && !tTimerId) {
+        tTimerId = setInterval(tickTypingTimer, 250);
+      } else if (!opts.typingTimerEnabled && tTimerId) {
+        clearInterval(tTimerId);
+        tTimerId = null;
+      }
+    }
+    setTypingUI();
   });
 
 
@@ -1289,6 +1498,7 @@
   buildKeyboard($("#keyboard"), null);
   buildKeyboard($("#keyboard2"), null);
   applyKeyboardVisibility();
+  $("#tTimer").disabled = !opts.typingTimerEnabled;
   nav("home");
 
   // PWA register
