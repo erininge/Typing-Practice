@@ -241,7 +241,7 @@
 
   const defaultOpts = () => ({
     layout: "jis",
-    inputMode: "mapped",
+    inputMode: "native",
     showKeyboard: true
   });
 
@@ -256,7 +256,7 @@
 
   let opts = loadJSON(STORAGE.opts, defaultOpts());
   // normalize older saved options
-  if (!opts.inputMode) opts.inputMode = "mapped";
+  if (!opts.inputMode || !["native", "mapped"].includes(opts.inputMode)) opts.inputMode = "native";
   if (typeof opts.showKeyboard !== "boolean") opts.showKeyboard = true;
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
@@ -623,6 +623,7 @@
   let wordCorrectIndices = new Set();
   let wordInput = "";
   let wordMatched = 0;
+  let suppressWordInput = false;
 
   let sentenceTarget = "", sentenceTyped = "";
   let sDone=0, sCorrect=0, sWrong=0;
@@ -630,6 +631,7 @@
   let sentenceCorrectIndices = new Set();
   let sentenceInput = "";
   let sentenceMatched = 0;
+  let suppressSentenceInput = false;
 
   function setWordUI() {
     renderPassage($("#wordTarget"), wordTarget, wordTyped.length, wordWrongIndices, wordCorrectIndices);
@@ -687,6 +689,8 @@
     }
     wordInput = "";
     wordMatched = 0;
+    const wordInputEl = $("#wordInput");
+    if (wordInputEl.value !== "") wordInputEl.value = "";
     buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
     setWordUI();
   }
@@ -700,6 +704,8 @@
     sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
+    const sentenceInputEl = $("#sentenceInput");
+    if (sentenceInputEl.value !== "") sentenceInputEl.value = "";
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
   }
@@ -711,6 +717,7 @@
     wordCorrectIndices = new Set();
     wordInput = "";
     wordMatched = 0;
+    suppressWordInput = false;
     pendingDiacritic = null;
     $("#btnWordStart").disabled = true;
     $("#btnWordStop").disabled = false;
@@ -729,6 +736,7 @@
     wordCorrectIndices = new Set();
     wordInput = "";
     wordMatched = 0;
+    suppressWordInput = false;
     $("#wordInput").disabled = true;
     buildKeyboard($("#keyboardWord"), null);
     setWordUI();
@@ -741,6 +749,7 @@
     sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
+    suppressSentenceInput = false;
     pendingDiacritic = null;
     $("#btnSentenceStart").disabled = true;
     $("#btnSentenceStop").disabled = false;
@@ -759,6 +768,7 @@
     sentenceCorrectIndices = new Set();
     sentenceInput = "";
     sentenceMatched = 0;
+    suppressSentenceInput = false;
     $("#sentenceInput").disabled = true;
     buildKeyboard($("#keyboardSentence"), null);
     setSentenceUI();
@@ -834,6 +844,11 @@
   function handleWordInputChange() {
     if (!wordOn) return;
     const inputEl = $("#wordInput");
+    if (suppressWordInput) {
+      suppressWordInput = false;
+      if (inputEl.value !== wordInput) inputEl.value = wordInput;
+      return;
+    }
     let value = clampInputToTarget(inputEl.value, wordTarget);
     if (value !== inputEl.value) inputEl.value = value;
 
@@ -870,6 +885,7 @@
     if (wordWrongIndices.size === 0 && wordMatched >= wordTarget.length) {
       wDone += 1;
       stats.word.words += 1;
+      suppressWordInput = true;
       pickWord();
       $("#wordInput").focus();
       return;
@@ -881,6 +897,11 @@
   function handleSentenceInputChange() {
     if (!sentenceOn) return;
     const inputEl = $("#sentenceInput");
+    if (suppressSentenceInput) {
+      suppressSentenceInput = false;
+      if (inputEl.value !== sentenceInput) inputEl.value = sentenceInput;
+      return;
+    }
     let value = clampInputToTarget(inputEl.value, sentenceTarget);
     if (value !== inputEl.value) inputEl.value = value;
 
@@ -917,6 +938,7 @@
     if (sentenceWrongIndices.size === 0 && sentenceMatched >= sentenceTarget.length) {
       sDone += 1;
       stats.sentence.sentences += 1;
+      suppressSentenceInput = true;
       pickSentence();
       $("#sentenceInput").focus();
       return;
