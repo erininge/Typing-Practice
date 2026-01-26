@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="meta">
-      <span class="pill">v1.2.3</span>
-      <span class="pill">build 7b1c0e4d9a</span>
+      <span class="pill">v1.2.4</span>
+      <span class="pill">build b2c1f7d4aa</span>
     </div>
   </header>
 
@@ -94,8 +94,7 @@
       <div class="typingPanel">
         <div class="typingLine" id="typingTarget"></div>
         <div class="typingLine typed" id="typingTyped"></div>
-        <div class="small muted">Your input</div>
-        <div class="typingLine typed input" id="typingInput">—</div>
+        <input class="typingLine typed input typingInputField" id="typingInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type here..." />
         <div class="small muted">Type the kana stream using your selected input mode. Backspace works.</div>
 
         <div class="scoreRow">
@@ -142,9 +141,8 @@
       <div class="typingPanel">
         <div class="typingLine" id="wordTarget">—</div>
         <div class="typingLine typed" id="wordTyped"></div>
-        <div class="small muted">Your input</div>
-        <div class="typingLine typed input" id="wordInput">—</div>
-        <div class="small muted" id="wordHint">Type the word. It won’t advance until you hit the correct key (wrong keys will flash red on the target line).</div>
+        <input class="typingLine typed input typingInputField" id="wordInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the word..." />
+        <div class="small muted" id="wordHint">Type the word. It won’t advance until you hit the correct key (wrong keys will highlight red on the target line).</div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Words</div><div class="v" id="wDone">0</div></div>
@@ -193,8 +191,7 @@
       <div class="typingPanel">
         <div class="typingLine" id="sentenceTarget">—</div>
         <div class="typingLine typed" id="sentenceTyped"></div>
-        <div class="small muted">Your input</div>
-        <div class="typingLine typed input" id="sentenceInput">—</div>
+        <input class="typingLine typed input typingInputField" id="sentenceInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the sentence..." />
         <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space). Wrong keys will highlight red on the passage.</div>
 
         <div class="scoreRow">
