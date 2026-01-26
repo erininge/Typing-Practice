@@ -160,6 +160,36 @@
     }
   };
 
+  const DAKUTEN_MAP = {
+    う: "ゔ",
+    か: "が", き: "ぎ", く: "ぐ", け: "げ", こ: "ご",
+    さ: "ざ", し: "じ", す: "ず", せ: "ぜ", そ: "ぞ",
+    た: "だ", ち: "ぢ", つ: "づ", て: "で", と: "ど",
+    は: "ば", ひ: "び", ふ: "ぶ", へ: "べ", ほ: "ぼ"
+  };
+
+  const HANDAKUTEN_MAP = {
+    は: "ぱ", ひ: "ぴ", ふ: "ぷ", へ: "ぺ", ほ: "ぽ"
+  };
+
+  const VOICED_TO_BASE = {};
+  for (const [base, voiced] of Object.entries(DAKUTEN_MAP)) {
+    VOICED_TO_BASE[voiced] = { base, mark: "゛" };
+  }
+  for (const [base, voiced] of Object.entries(HANDAKUTEN_MAP)) {
+    VOICED_TO_BASE[voiced] = { base, mark: "゜" };
+  }
+
+  function combineDiacritic(base, mark) {
+    if (mark === "゛") return DAKUTEN_MAP[base] || null;
+    if (mark === "゜") return HANDAKUTEN_MAP[base] || null;
+    return null;
+  }
+
+  function decomposeVoiced(kana) {
+    return VOICED_TO_BASE[kana] || null;
+  }
+
   // Practice sets (what kana can be targeted)
   const SETS = [
     { id:"aiueo", name:"あいうえお", items:["あ","い","う","え","お"] },
@@ -210,8 +240,6 @@
   };
 
   const defaultOpts = () => ({
-    tts: "off",
-    ttsFallback: "jpOnly",
     layout: "jis",
     inputMode: "mapped",
     showKeyboard: true
@@ -228,7 +256,6 @@
 
   let opts = loadJSON(STORAGE.opts, defaultOpts());
   // normalize older saved options
-  if (!opts.ttsFallback) opts.ttsFallback = "jpOnly";
   if (!opts.inputMode) opts.inputMode = "mapped";
   if (typeof opts.showKeyboard !== "boolean") opts.showKeyboard = true;
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
@@ -246,6 +273,14 @@
     return stats.kana[k];
   }
 
+  function getExpectedKana() {
+    if (practiceOn) return targetKana;
+    if (typingOn) return nextNeededKana();
+    if (wordOn) return nextChar(wordTarget, wordTyped);
+    if (sentenceOn) return nextChar(sentenceTarget, sentenceTyped);
+    return null;
+  }
+
   function nav(id) {
     ["home","practice","word","sentence","typing","stats","settings"].forEach(x => {
       const el = document.getElementById(x);
@@ -256,43 +291,6 @@
   }
 
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
-
-  // ---- TTS ----
-  let cachedVoices = [];
-  function refreshVoices() {
-    try { cachedVoices = speechSynthesis.getVoices?.() || []; } catch { cachedVoices = []; }
-  }
-  if ("speechSynthesis" in window) {
-    refreshVoices();
-    window.speechSynthesis.onvoiceschanged = () => refreshVoices();
-  }
-
-  function speakKana(kana) {
-    if (opts.tts !== "on") return;
-    if (!("speechSynthesis" in window)) return;
-
-    refreshVoices();
-    const u = new SpeechSynthesisUtterance(kana);
-    const voices = cachedVoices || [];
-    const ja = voices.find(v => /ja|jpn/i.test(v.lang) || /japanese/i.test(v.name));
-
-    if (ja) {
-      u.voice = ja;
-      u.lang = ja.lang || "ja-JP";
-    } else {
-      // fallback behavior for devices without Japanese voices installed
-      if ((opts.ttsFallback || "jpOnly") === "jpOnly") return;
-      u.lang = "ja-JP";
-    }
-
-    u.rate = 1.0;
-    try {
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    } catch {
-      // ignore
-    }
-  }
 
   // ---- Build practicing pool ----
   function getPool() {
@@ -369,6 +367,7 @@
   let targetKana = null;
   let targetCode = null;
   let streak = 0, correct=0, wrong=0;
+  let pendingDiacritic = null;
 
   function pickTarget() {
     const pool = getPool();
@@ -378,7 +377,6 @@
     $("#feedback").textContent = "";
     $("#feedback").className = "feedback";
     buildKeyboard($("#keyboard"), targetCode);
-    speakKana(targetKana);
   }
 
   function updatePracticeStats() {
@@ -392,6 +390,7 @@
   $("#btnPracticeStart").addEventListener("click", () => {
     practiceOn = true;
     streak = 0; correct = 0; wrong = 0;
+    pendingDiacritic = null;
     updatePracticeStats();
     pickTarget();
     $("#btnPracticeStart").disabled = true;
@@ -442,6 +441,7 @@
   let typingOn = false;
   let typingTarget = "";
   let typed = "";
+  let typingInput = "";
   let tCorrect = 0, tWrong = 0;
   let tStart = 0;
   let tTimerId = null;
@@ -450,6 +450,7 @@
   function setTypingUI() {
     $("#typingTarget").textContent = typingTarget || "—";
     $("#typingTyped").textContent = typed || "";
+    $("#typingInput").textContent = typingInput || "—";
     $("#tCorrect").textContent = String(tCorrect);
     $("#tWrong").textContent = String(tWrong);
     if (!typingOn) {
@@ -496,8 +497,10 @@
     tLimit = clampInt($("#tTimer").value, 10, 600);
 
     typingOn = true;
+    pendingDiacritic = null;
     typingTarget = makeKanaStream(len);
     typed = "";
+    typingInput = "";
     tCorrect = 0; tWrong = 0;
     tStart = Date.now();
     setTypingUI();
@@ -527,6 +530,7 @@
 
     const need = nextNeededKana();
     flashKey(pressedCode);
+    typingInput += kana;
 
     if (kana === need) {
       typed += kana;
@@ -556,14 +560,17 @@
   let wordTarget = "", wordTyped = "";
   let wDone=0, wCorrect=0, wWrong=0;
   let wordWrongIndex = null;
+  let wordInput = "";
 
   let sentenceTarget = "", sentenceTyped = "";
   let sDone=0, sCorrect=0, sWrong=0;
   let sentenceWrongIndex = null;
+  let sentenceInput = "";
 
   function setWordUI() {
     renderPassage($("#wordTarget"), wordTarget, wordTyped, wordWrongIndex);
     $("#wordTyped").textContent = wordTyped || "";
+    $("#wordInput").textContent = wordInput || "—";
     $("#wDone").textContent = String(wDone);
     $("#wCorrect").textContent = String(wCorrect);
     $("#wWrong").textContent = String(wWrong);
@@ -573,6 +580,7 @@
   function setSentenceUI() {
     renderPassage($("#sentenceTarget"), sentenceTarget, sentenceTyped, sentenceWrongIndex);
     $("#sentenceTyped").textContent = sentenceTyped || "";
+    $("#sentenceInput").textContent = sentenceInput || "—";
     $("#sDone").textContent = String(sDone);
     $("#sCorrect").textContent = String(sCorrect);
     $("#sWrong").textContent = String(sWrong);
@@ -615,7 +623,6 @@
       wordWrongIndex = null;
     }
     buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
-    speakKana(wordTarget);
     setWordUI();
   }
 
@@ -633,7 +640,6 @@
     sentenceTyped = "";
     sentenceWrongIndex = null;
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
-    speakKana(sentenceTarget);
     setSentenceUI();
   }
 
@@ -641,6 +647,8 @@
     wordOn = true; sentenceOn = false; practiceOn = false; typingOn = false;
     wDone=0; wCorrect=0; wWrong=0;
     wordWrongIndex = null;
+    wordInput = "";
+    pendingDiacritic = null;
     $("#btnWordStart").disabled = true;
     $("#btnWordStop").disabled = false;
     pickWord();
@@ -651,6 +659,7 @@
     $("#btnWordStop").disabled = true;
     wordTarget = ""; wordTyped = "";
     wordWrongIndex = null;
+    wordInput = "";
     buildKeyboard($("#keyboardWord"), null);
     setWordUI();
   });
@@ -659,6 +668,8 @@
     sentenceOn = true; wordOn = false; practiceOn = false; typingOn = false;
     sDone=0; sCorrect=0; sWrong=0;
     sentenceWrongIndex = null;
+    sentenceInput = "";
+    pendingDiacritic = null;
     $("#btnSentenceStart").disabled = true;
     $("#btnSentenceStop").disabled = false;
     pickSentence();
@@ -669,6 +680,7 @@
     $("#btnSentenceStop").disabled = true;
     sentenceTarget = ""; sentenceTyped = "";
     sentenceWrongIndex = null;
+    sentenceInput = "";
     buildKeyboard($("#keyboardSentence"), null);
     setSentenceUI();
   });
@@ -677,6 +689,7 @@
     if (mode === "word") {
       const need = nextChar(wordTarget, wordTyped);
       if (!need) return;
+      wordInput += pressedKana;
       if (pressedKana === need) {
         wordTyped += need;
         wCorrect += 1;
@@ -704,6 +717,7 @@
     } else if (mode === "sentence") {
       const need = nextChar(sentenceTarget, sentenceTyped);
       if (!need) return;
+      sentenceInput += pressedKana;
       // Spaces are optional: if need is space, user can either press space OR type the next kana directly.
       if (need === " " && pressedKana !== " ") {
         // treat as skip-space attempt: evaluate against next non-space char
@@ -745,6 +759,25 @@
     }
   }
 
+  function processInput(kana, code) {
+    if (!kana) return;
+    if (practiceOn) {
+      if (!targetKana || (opts.inputMode !== "native" && !targetCode)) {
+        // If targetCode missing (not in map), just pick another
+        pickTarget();
+        return;
+      }
+      const ok = opts.inputMode === "native" ? (kana === targetKana) : (code === targetCode);
+      markPractice(ok, code, kana);
+    } else if (typingOn) {
+      typingKey(kana, code);
+    } else if (wordOn) {
+      handleStepPractice("word", kana, code);
+    } else if (sentenceOn) {
+      handleStepPractice("sentence", kana, code);
+    }
+  }
+
   // ---- Global key listener ----
   window.addEventListener("keydown", (e) => {
     // Don't hijack browser shortcuts
@@ -755,17 +788,21 @@
     // Allow backspace in typing/word/sentence
     if ((typingOn || wordOn || sentenceOn) && code === "Backspace") {
       e.preventDefault();
+      pendingDiacritic = null;
       if (typingOn) {
         if (typed.length) typed = typed.slice(0, -1);
+        if (typingInput.length) typingInput = typingInput.slice(0, -1);
         buildKeyboard($("#keyboard2"), nextNeededCode());
         setTypingUI();
       } else if (wordOn) {
         if (wordTyped.length) wordTyped = wordTyped.slice(0, -1);
+        if (wordInput.length) wordInput = wordInput.slice(0, -1);
         wordWrongIndex = null;
         buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
         setWordUI();
       } else if (sentenceOn) {
         if (sentenceTyped.length) sentenceTyped = sentenceTyped.slice(0, -1);
+        if (sentenceInput.length) sentenceInput = sentenceInput.slice(0, -1);
         sentenceWrongIndex = null;
         buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
         setSentenceUI();
@@ -793,29 +830,43 @@
     }
 
     if (!inputKana) return;
-    if (practiceOn) {
-      if (!targetKana || (opts.inputMode !== "native" && !targetCode)) {
-        // If targetCode missing (not in map), just pick another
-        pickTarget();
-        return;
+    if (opts.inputMode !== "native") {
+      const expectedKana = getExpectedKana();
+      const isDiacritic = inputKana === "゛" || inputKana === "゜";
+
+      if (pendingDiacritic) {
+        if (isDiacritic) {
+          const combined = combineDiacritic(pendingDiacritic.kana, inputKana);
+          if (combined) {
+            inputKana = combined;
+            pendingDiacritic = null;
+          } else {
+            processInput(pendingDiacritic.kana, pendingDiacritic.code);
+            pendingDiacritic = null;
+          }
+        } else {
+          processInput(pendingDiacritic.kana, pendingDiacritic.code);
+          pendingDiacritic = null;
+        }
       }
-      const ok = opts.inputMode === "native" ? (inputKana === targetKana) : (code === targetCode);
-      markPractice(ok, code, inputKana);
-    } else if (typingOn) {
-      typingKey(inputKana, code);
-    } else if (wordOn) {
-      handleStepPractice("word", inputKana, code);
-    } else if (sentenceOn) {
-      handleStepPractice("sentence", inputKana, code);
+
+      if (!pendingDiacritic && !isDiacritic) {
+        const expectedParts = expectedKana ? decomposeVoiced(expectedKana) : null;
+        if (expectedParts && expectedParts.base === inputKana) {
+          pendingDiacritic = { kana: inputKana, code };
+          flashKey(code);
+          return;
+        }
+      }
     }
+
+    processInput(inputKana, code);
   });
 
   // ---- Settings UI ----
   function renderSettings() {
     $("#layoutSelect").value = opts.layout || "jis";
     $("#inputModeSelect").value = opts.inputMode || "mapped";
-    $("#ttsSelect").value = opts.tts || "off";
-    $("#ttsFallback").value = opts.ttsFallback || "jpOnly";
     $("#keyboardToggle").value = opts.showKeyboard ? "on" : "off";
 
     renderMapTable();
@@ -837,11 +888,6 @@
     renderSettings();
   });
 
-  $("#ttsSelect").addEventListener("change", (e) => {
-    opts.tts = e.target.value;
-    saveJSON(STORAGE.opts, opts);
-  });
-
   $("#inputModeSelect").addEventListener("change", (e) => {
     opts.inputMode = e.target.value;
     saveJSON(STORAGE.opts, opts);
@@ -853,10 +899,6 @@
     applyKeyboardVisibility();
   });
 
-  $("#ttsFallback").addEventListener("change", (e) => {
-    opts.ttsFallback = e.target.value;
-    saveJSON(STORAGE.opts, opts);
-  });
 
   function renderMapTable() {
     const codes = [];
@@ -952,15 +994,6 @@
     localStorage.removeItem(STORAGE.map);
     saveJSON(STORAGE.map, map);
     renderSettings();
-  });
-
-  $("#btnTestVoice").addEventListener("click", () => {
-    if (opts.tts !== "on") {
-      alert("Turn TTS On first (Settings → Audio).");
-      return;
-    }
-    refreshVoices();
-    speakKana("あ い う え お");
   });
 
   // Stats

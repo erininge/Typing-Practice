@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="meta">
-      <span class="pill">v1.2.1</span>
-      <span class="pill">build 6b4f9e1a2d</span>
+      <span class="pill">v1.2.2</span>
+      <span class="pill">build 1f3d0b7c2a</span>
     </div>
   </header>
 
@@ -94,6 +94,8 @@
       <div class="typingPanel">
         <div class="typingLine" id="typingTarget"></div>
         <div class="typingLine typed" id="typingTyped"></div>
+        <div class="small muted">Your input</div>
+        <div class="typingLine typed input" id="typingInput">—</div>
         <div class="small muted">Type the kana stream using your selected input mode. Backspace works.</div>
 
         <div class="scoreRow">
@@ -140,6 +142,8 @@
       <div class="typingPanel">
         <div class="typingLine" id="wordTarget">—</div>
         <div class="typingLine typed" id="wordTyped"></div>
+        <div class="small muted">Your input</div>
+        <div class="typingLine typed input" id="wordInput">—</div>
         <div class="small muted" id="wordHint">Type the word. It won’t advance until you hit the correct key (wrong keys will flash red on the target line).</div>
 
         <div class="scoreRow">
@@ -189,6 +193,8 @@
       <div class="typingPanel">
         <div class="typingLine" id="sentenceTarget">—</div>
         <div class="typingLine typed" id="sentenceTyped"></div>
+        <div class="small muted">Your input</div>
+        <div class="typingLine typed input" id="sentenceInput">—</div>
         <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space). Wrong keys will highlight red on the passage.</div>
 
         <div class="scoreRow">
@@ -250,7 +256,6 @@
             <input id="importFile" type="file" accept="application/json" />
           </label>
           <button class="btn danger" id="btnResetMap">Reset map</button>
-          <button class="btn" id="btnTestVoice">Test voice</button>
         </div>
       </div>
 
@@ -272,26 +277,10 @@
         </label>
 
         <label class="field">
-          <span>Audio (TTS)</span>
-          <select id="ttsSelect">
-            <option value="off">Off</option>
-            <option value="on">On (speak kana on new target)</option>
-          </select>
-        </label>
-
-        <label class="field">
           <span>On-screen keyboard</span>
           <select id="keyboardToggle">
             <option value="on">Show</option>
             <option value="off">Hide</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span>TTS fallback</span>
-          <select id="ttsFallback">
-            <option value="jpOnly">JP voice only (silent if missing)</option>
-            <option value="any">Any voice (still speak)</option>
           </select>
         </label>
       </div>
