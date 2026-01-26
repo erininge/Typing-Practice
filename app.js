@@ -530,7 +530,6 @@
 
     const need = nextNeededKana();
     flashKey(pressedCode);
-    typingInput += kana;
 
     if (kana === need) {
       typed += kana;
@@ -689,7 +688,6 @@
     if (mode === "word") {
       const need = nextChar(wordTarget, wordTyped);
       if (!need) return;
-      wordInput += pressedKana;
       if (pressedKana === need) {
         wordTyped += need;
         wCorrect += 1;
@@ -717,7 +715,6 @@
     } else if (mode === "sentence") {
       const need = nextChar(sentenceTarget, sentenceTyped);
       if (!need) return;
-      sentenceInput += pressedKana;
       // Spaces are optional: if need is space, user can either press space OR type the next kana directly.
       if (need === " " && pressedKana !== " ") {
         // treat as skip-space attempt: evaluate against next non-space char
@@ -778,6 +775,46 @@
     }
   }
 
+  function appendInputDisplay(kana) {
+    if (typingOn) {
+      typingInput += kana;
+    } else if (wordOn) {
+      wordInput += kana;
+    } else if (sentenceOn) {
+      sentenceInput += kana;
+    }
+  }
+
+  function replaceLastInputDisplay(kana) {
+    if (typingOn && typingInput.length) {
+      typingInput = typingInput.slice(0, -1) + kana;
+    } else if (wordOn && wordInput.length) {
+      wordInput = wordInput.slice(0, -1) + kana;
+    } else if (sentenceOn && sentenceInput.length) {
+      sentenceInput = sentenceInput.slice(0, -1) + kana;
+    }
+  }
+
+  function popInputDisplay() {
+    if (typingOn && typingInput.length) {
+      typingInput = typingInput.slice(0, -1);
+    } else if (wordOn && wordInput.length) {
+      wordInput = wordInput.slice(0, -1);
+    } else if (sentenceOn && sentenceInput.length) {
+      sentenceInput = sentenceInput.slice(0, -1);
+    }
+  }
+
+  function updateActiveInputUI() {
+    if (typingOn) {
+      setTypingUI();
+    } else if (wordOn) {
+      setWordUI();
+    } else if (sentenceOn) {
+      setSentenceUI();
+    }
+  }
+
   // ---- Global key listener ----
   window.addEventListener("keydown", (e) => {
     // Don't hijack browser shortcuts
@@ -788,21 +825,27 @@
     // Allow backspace in typing/word/sentence
     if ((typingOn || wordOn || sentenceOn) && code === "Backspace") {
       e.preventDefault();
+      if (pendingDiacritic) {
+        pendingDiacritic = null;
+        popInputDisplay();
+        updateActiveInputUI();
+        return;
+      }
       pendingDiacritic = null;
       if (typingOn) {
         if (typed.length) typed = typed.slice(0, -1);
-        if (typingInput.length) typingInput = typingInput.slice(0, -1);
+        popInputDisplay();
         buildKeyboard($("#keyboard2"), nextNeededCode());
         setTypingUI();
       } else if (wordOn) {
         if (wordTyped.length) wordTyped = wordTyped.slice(0, -1);
-        if (wordInput.length) wordInput = wordInput.slice(0, -1);
+        popInputDisplay();
         wordWrongIndex = null;
         buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
         setWordUI();
       } else if (sentenceOn) {
         if (sentenceTyped.length) sentenceTyped = sentenceTyped.slice(0, -1);
-        if (sentenceInput.length) sentenceInput = sentenceInput.slice(0, -1);
+        popInputDisplay();
         sentenceWrongIndex = null;
         buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
         setSentenceUI();
@@ -833,20 +876,27 @@
     if (opts.inputMode !== "native") {
       const expectedKana = getExpectedKana();
       const isDiacritic = inputKana === "゛" || inputKana === "゜";
+      let displayHandled = false;
 
       if (pendingDiacritic) {
         if (isDiacritic) {
           const combined = combineDiacritic(pendingDiacritic.kana, inputKana);
           if (combined) {
             inputKana = combined;
+            replaceLastInputDisplay(combined);
             pendingDiacritic = null;
+            displayHandled = true;
           } else {
             processInput(pendingDiacritic.kana, pendingDiacritic.code);
             pendingDiacritic = null;
+            appendInputDisplay(inputKana);
+            displayHandled = true;
           }
         } else {
           processInput(pendingDiacritic.kana, pendingDiacritic.code);
           pendingDiacritic = null;
+          appendInputDisplay(inputKana);
+          displayHandled = true;
         }
       }
 
@@ -854,10 +904,17 @@
         const expectedParts = expectedKana ? decomposeVoiced(expectedKana) : null;
         if (expectedParts && expectedParts.base === inputKana) {
           pendingDiacritic = { kana: inputKana, code };
+          appendInputDisplay(inputKana);
           flashKey(code);
+          updateActiveInputUI();
           return;
         }
       }
+      if (!displayHandled) {
+        appendInputDisplay(inputKana);
+      }
+    } else {
+      appendInputDisplay(inputKana);
     }
 
     processInput(inputKana, code);
