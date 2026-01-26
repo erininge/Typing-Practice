@@ -238,6 +238,11 @@ code{color: var(--accent)}
   color: rgba(231,238,252,.85);
   border-style:dashed;
 }
+.typingLine.input{
+  font-size: 22px;
+  letter-spacing:.04em;
+  color: rgba(231,238,252,.75);
+}
 
 .passageChar{
   display:inline-block;
