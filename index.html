@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Kana Keyboard Trainer</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">かな</div>
+      <div>
+        <div class="title">Kana Keyboard Trainer</div>
+        <div class="subtitle">Memorize the Japanese Kana keyboard layout</div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="pill">v1.2.0</span>
+      <span class="pill">build 5852a7f6ce</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" id="home">
+      <h2>Choose a mode</h2>
+      <div class="grid2">
+        <button class="btn primary" data-nav="practice">Practice: Single Kana (Find the key)</button>
+        <button class="btn" data-nav="word">Practice: Words</button>
+        <button class="btn" data-nav="sentence">Practice: Sentences</button>
+        <button class="btn" data-nav="typing">Typing Run (Kana stream)</button>
+        <button class="btn" data-nav="stats">Stats</button>
+        <button class="btn" data-nav="settings">Settings / Keyboard Map</button>
+      </div>
+
+      <div class="hint">
+        <p><strong>How it works:</strong> this game listens for your <em>physical key</em> (e.g., <code>KeyA</code>) and translates it into kana using the keyboard map you pick. That means it works even if your IME is set to Romaji.</p>
+        <p class="small">Tip: if you want it to feel “real”, set your input source to Japanese Kana — but you don’t have to.</p>
+      </div>
+    </section>
+
+    <section class="card hidden" id="practice">
+      <div class="row">
+        <h2>Practice: Find the key</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnPracticeStart">Start</button>
+          <button class="btn" id="btnPracticeStop" disabled>Stop</button>
+        </div>
+      </div>
+
+      <div class="practicePanel">
+        <div class="bigTarget" id="targetKana">—</div>
+        <div class="sub" id="targetHint">Press the key for this kana</div>
+        <div class="feedback" id="feedback"></div>
+
+        <div class="scoreRow">
+          <div class="statBox"><div class="k">Streak</div><div class="v" id="streak">0</div></div>
+          <div class="statBox"><div class="k">Correct</div><div class="v" id="correct">0</div></div>
+          <div class="statBox"><div class="k">Wrong</div><div class="v" id="wrong">0</div></div>
+          <div class="statBox"><div class="k">Accuracy</div><div class="v" id="acc">—</div></div>
+        </div>
+      </div>
+
+      <div class="kbdWrap">
+        <div class="kbdHeader">
+          <div>
+            <div class="kbdTitle">On-screen keyboard</div>
+            <div class="small muted">Target key highlights. Click “Settings” to edit the map if your stickers differ.</div>
+          </div>
+          <button class="btn smallBtn" data-nav="settings">Edit map</button>
+        </div>
+        <div id="keyboard" class="keyboard" aria-label="Keyboard"></div>
+      </div>
+
+      <div class="small muted">
+        <p>Scoring saves automatically in your browser (localStorage). Use “Reset stats” in Settings if you want a clean slate.</p>
+      </div>
+    </section>
+
+    <section class="card hidden" id="typing">
+      <div class="row">
+        <h2>Typing Run: Kana stream</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnTypingStart">Start</button>
+          <button class="btn" id="btnTypingStop" disabled>Stop</button>
+        </div>
+      </div>
+
+      <div class="typingPanel">
+        <div class="typingLine" id="typingTarget"></div>
+        <div class="typingLine typed" id="typingTyped"></div>
+        <div class="small muted">Type the kana stream using your physical keys. Backspace works.</div>
+
+        <div class="scoreRow">
+          <div class="statBox"><div class="k">Time</div><div class="v" id="tTime">—</div></div>
+          <div class="statBox"><div class="k">KPM</div><div class="v" id="tKpm">—</div></div>
+          <div class="statBox"><div class="k">Correct</div><div class="v" id="tCorrect">0</div></div>
+          <div class="statBox"><div class="k">Wrong</div><div class="v" id="tWrong">0</div></div>
+        </div>
+
+        <div class="row gap">
+          <label class="field">
+            <span>Length</span>
+            <input id="tLen" type="number" min="10" max="300" value="60" />
+          </label>
+          <label class="field">
+            <span>Timer (sec)</span>
+            <input id="tTimer" type="number" min="10" max="600" value="60" />
+          </label>
+        </div>
+      </div>
+
+      <div class="kbdWrap">
+        <div class="kbdHeader">
+          <div>
+            <div class="kbdTitle">On-screen keyboard</div>
+            <div class="small muted">Highlights the next key you need.</div>
+          </div>
+        </div>
+        <div id="keyboard2" class="keyboard" aria-label="Keyboard"></div>
+      </div>
+    </section>
+
+
+    <section class="card hidden" id="word">
+      <div class="row">
+        <h2>Practice: Words</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnWordStart">Start</button>
+          <button class="btn" id="btnWordStop" disabled>Stop</button>
+        </div>
+      </div>
+
+      <div class="typingPanel">
+        <div class="typingLine" id="wordTarget">—</div>
+        <div class="typingLine typed" id="wordTyped"></div>
+        <div class="small muted" id="wordHint">Type the word using your physical keys. It won’t advance until you hit the correct key.</div>
+
+        <div class="scoreRow">
+          <div class="statBox"><div class="k">Words</div><div class="v" id="wDone">0</div></div>
+          <div class="statBox"><div class="k">Correct keys</div><div class="v" id="wCorrect">0</div></div>
+          <div class="statBox"><div class="k">Wrong keys</div><div class="v" id="wWrong">0</div></div>
+          <div class="statBox"><div class="k">Accuracy</div><div class="v" id="wAcc">—</div></div>
+        </div>
+
+        <div class="row gap">
+          <label class="field">
+            <span>Word list</span>
+            <select id="wordListSelect">
+              <option value="basic">Basic (built-in)</option>
+              <option value="all">All enabled kana (random)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Max length</span>
+            <input id="wordMaxLen" type="number" min="2" max="12" value="6" />
+          </label>
+        </div>
+      </div>
+
+      <div class="kbdWrap">
+        <div class="kbdHeader">
+          <div>
+            <div class="kbdTitle">On-screen keyboard</div>
+            <div class="small muted">Highlights the next key you need.</div>
+          </div>
+          <button class="btn smallBtn" data-nav="settings">Edit map</button>
+        </div>
+        <div id="keyboardWord" class="keyboard" aria-label="Keyboard"></div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="sentence">
+      <div class="row">
+        <h2>Practice: Sentences</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnSentenceStart">Start</button>
+          <button class="btn" id="btnSentenceStop" disabled>Stop</button>
+        </div>
+      </div>
+
+      <div class="typingPanel">
+        <div class="typingLine" id="sentenceTarget">—</div>
+        <div class="typingLine typed" id="sentenceTyped"></div>
+        <div class="small muted" id="sentenceHint">Type the sentence. Spaces are optional (you can press Space to match a space).</div>
+
+        <div class="scoreRow">
+          <div class="statBox"><div class="k">Sentences</div><div class="v" id="sDone">0</div></div>
+          <div class="statBox"><div class="k">Correct keys</div><div class="v" id="sCorrect">0</div></div>
+          <div class="statBox"><div class="k">Wrong keys</div><div class="v" id="sWrong">0</div></div>
+          <div class="statBox"><div class="k">Accuracy</div><div class="v" id="sAcc">—</div></div>
+        </div>
+
+        <div class="row gap">
+          <label class="field">
+            <span>Sentence set</span>
+            <select id="sentenceListSelect">
+              <option value="basic">Basic (built-in)</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="kbdWrap">
+        <div class="kbdHeader">
+          <div>
+            <div class="kbdTitle">On-screen keyboard</div>
+            <div class="small muted">Highlights the next key you need.</div>
+          </div>
+          <button class="btn smallBtn" data-nav="settings">Edit map</button>
+        </div>
+        <div id="keyboardSentence" class="keyboard" aria-label="Keyboard"></div>
+      </div>
+    </section>
+
+
+    <section class="card hidden" id="stats">
+      <div class="row">
+        <h2>Stats</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnResetStats">Reset stats</button>
+        </div>
+      </div>
+
+      <div class="grid3" id="statsGrid"></div>
+
+      <div class="cardInner">
+        <h3>Kana accuracy heatmap</h3>
+        <div class="small muted">This shows which kana you miss the most. Aim to make the whole grid boring 😄</div>
+        <div id="heatmap" class="heatmap"></div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="settings">
+      <div class="row">
+        <h2>Settings / Keyboard Map</h2>
+        <div class="row gap">
+          <button class="btn" data-nav="home">Home</button>
+          <button class="btn" id="btnExport">Export map</button>
+          <label class="btn fileBtn">
+            Import map
+            <input id="importFile" type="file" accept="application/json" />
+          </label>
+          <button class="btn danger" id="btnResetMap">Reset map</button>
+          <button class="btn" id="btnTestVoice">Test voice</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Default layout</span>
+          <select id="layoutSelect">
+            <option value="jis">Japanese JIS (recommended)</option>
+            <option value="us">US keyboard (basic)</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Audio (TTS)</span>
+          <select id="ttsSelect">
+            <option value="off">Off</option>
+            <option value="on">On (speak kana on new target)</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>TTS fallback</span>
+          <select id="ttsFallback">
+            <option value="jpOnly">JP voice only (silent if missing)</option>
+            <option value="any">Any voice (still speak)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="cardInner">
+        <h3>Edit key → kana mapping</h3>
+        <div class="small muted">
+          Click any kana cell to edit. Values should be single kana like <code>あ</code> (you can also use small kana like <code>ゃ</code>).
+        </div>
+        <div id="mapTable" class="mapTable"></div>
+      </div>
+
+      <div class="cardInner">
+        <h3>What to practice</h3>
+        <div class="small muted">Toggle sets to focus on. (These determine what gets picked as the target.)</div>
+        <div id="sets" class="sets"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>Tip: This is a PWA — add it to your home screen for a full-screen app feel.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
