@@ -257,17 +257,6 @@ code{color: var(--accent)}
   color: rgba(231,238,252,.45);
 }
 
-.practiceInput{
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .passageChar{
   display:inline-block;
   padding:0 1px;

@@ -477,8 +477,6 @@
     $("#btnPracticeStart").disabled = true;
     $("#btnPracticePause").disabled = false;
     $("#btnPracticeStop").disabled = false;
-    $("#practiceInput").disabled = opts.inputMode !== "native";
-    if (opts.inputMode === "native") $("#practiceInput").focus();
   }
 
   function stopPractice() {
@@ -488,7 +486,6 @@
     $("#btnPracticeStart").disabled = false;
     $("#btnPracticePause").disabled = true;
     $("#btnPracticeStop").disabled = true;
-    $("#practiceInput").disabled = true;
     $("#feedback").textContent = "Stopped.";
     $("#feedback").className = "feedback";
     buildKeyboard($("#keyboard"), null);
@@ -498,7 +495,6 @@
   function pausePractice() {
     if (!practiceOn || practicePaused) return;
     practicePaused = true;
-    $("#practiceInput").disabled = true;
     $("#btnPracticeStart").disabled = false;
     $("#btnPracticePause").disabled = true;
     $("#feedback").textContent = "Paused.";
@@ -508,12 +504,10 @@
   function resumePractice() {
     if (!practiceOn || !practicePaused) return;
     practicePaused = false;
-    $("#practiceInput").disabled = opts.inputMode !== "native";
     $("#btnPracticeStart").disabled = true;
     $("#btnPracticePause").disabled = false;
     $("#feedback").textContent = "";
     $("#feedback").className = "feedback";
-    if (opts.inputMode === "native") $("#practiceInput").focus();
   }
 
   $("#btnPracticeStart").addEventListener("click", () => {
@@ -1197,7 +1191,7 @@
     if (e.metaKey || e.ctrlKey) return;
 
     if (typingOn || wordOn || sentenceOn) return;
-    if (opts.inputMode === "native") return;
+    if (opts.inputMode === "native" && !practiceOn) return;
 
     const code = e.code;
 
@@ -1215,6 +1209,7 @@
 
     let inputKana = "";
     if (opts.inputMode === "native") {
+      if (e.isComposing || e.key === "Process") return;
       if (e.key === " " || e.key === "Spacebar") {
         inputKana = " ";
       } else if (e.key && e.key.length === 1) {
@@ -1260,25 +1255,12 @@
     processInput(inputKana, code);
   });
 
-  $("#practiceInput").addEventListener("input", () => {
-    if (!practiceOn || practicePaused) return;
-    if (opts.inputMode !== "native") return;
-    const inputEl = $("#practiceInput");
-    const value = inputEl.value;
-    if (!value) return;
-    for (const ch of value) {
-      processInput(ch, "");
-    }
-    inputEl.value = "";
-  });
-
   $("#typingInput").addEventListener("input", handleTypingInputChange);
   $("#wordInput").addEventListener("input", handleWordInputChange);
   $("#sentenceInput").addEventListener("input", handleSentenceInputChange);
   $("#typingInput").disabled = true;
   $("#wordInput").disabled = true;
   $("#sentenceInput").disabled = true;
-  $("#practiceInput").disabled = true;
 
   // ---- Settings UI ----
   function renderSettings() {
@@ -1310,10 +1292,6 @@
   $("#inputModeSelect").addEventListener("change", (e) => {
     opts.inputMode = e.target.value;
     saveJSON(STORAGE.opts, opts);
-    if (practiceOn && !practicePaused) {
-      $("#practiceInput").disabled = opts.inputMode !== "native";
-      if (opts.inputMode === "native") $("#practiceInput").focus();
-    }
   });
 
   $("#keyboardToggle").addEventListener("change", (e) => {
