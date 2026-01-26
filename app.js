@@ -367,6 +367,7 @@
     const correctIndices = new Set();
     const wrongIndices = new Set();
     const inputToTarget = [];
+    const inputStates = [];
 
     for (let ii = 0; ii < input.length && ti < target.length; ii += 1) {
       const inputChar = input[ii];
@@ -378,13 +379,35 @@
       }
       if (ti >= target.length) {
         inputToTarget[ii] = null;
+        inputStates[ii] = "ignored";
         continue;
       }
+
+      const expected = target[ti];
+      const expectedParts = decomposeVoiced(expected);
+      const nextChar = input[ii + 1];
       inputToTarget[ii] = ti;
-      if (inputChar === target[ti]) {
+
+      if (expectedParts && inputChar === expectedParts.base) {
+        if (nextChar === expectedParts.mark) {
+          inputStates[ii] = "pending";
+          inputToTarget[ii + 1] = ti;
+          inputStates[ii + 1] = "correct";
+          correctIndices.add(ti);
+          ti += 1;
+          ii += 1;
+        } else {
+          inputStates[ii] = "pending";
+        }
+        continue;
+      }
+
+      if (inputChar === expected) {
         correctIndices.add(ti);
+        inputStates[ii] = "correct";
       } else {
         wrongIndices.add(ti);
+        inputStates[ii] = "wrong";
       }
       ti += 1;
     }
@@ -396,7 +419,14 @@
       }
     }
 
-    return { correctIndices, wrongIndices, nextTargetIndex: ti, inputToTarget };
+    for (let ii = 0; ii < input.length; ii += 1) {
+      if (!inputStates[ii]) {
+        inputToTarget[ii] = null;
+        inputStates[ii] = "ignored";
+      }
+    }
+
+    return { correctIndices, wrongIndices, nextTargetIndex: ti, inputToTarget, inputStates };
   }
 
   // ---- Practice mode ----
@@ -734,9 +764,18 @@
     setSentenceUI();
   });
 
+  function maxInputLengthForTarget(target) {
+    let extra = 0;
+    for (const ch of target) {
+      if (decomposeVoiced(ch)) extra += 1;
+    }
+    return target.length + extra;
+  }
+
   function clampInputToTarget(input, target) {
-    if (input.length <= target.length) return input;
-    return input.slice(0, target.length);
+    const maxLen = maxInputLengthForTarget(target);
+    if (input.length <= maxLen) return input;
+    return input.slice(0, maxLen);
   }
 
   function applyCorrectStats(chars) {
@@ -760,7 +799,7 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = typingInput;
-    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(typingTarget, value);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget, inputStates } = evaluateInput(typingTarget, value);
 
     typingInput = value;
     typingMatched = nextTargetIndex;
@@ -774,7 +813,9 @@
         const targetIndex = inputToTarget[i];
         if (targetIndex == null) continue;
         const expected = typingTarget.charAt(targetIndex);
-        if (value[i] === expected) {
+        const state = inputStates[i];
+        if (state !== "correct" && state !== "wrong") continue;
+        if (state === "correct") {
           tCorrect += 1;
           applyCorrectStats(expected);
         } else {
@@ -797,7 +838,7 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = wordInput;
-    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(wordTarget, value);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget, inputStates } = evaluateInput(wordTarget, value);
 
     wordInput = value;
     wordMatched = nextTargetIndex;
@@ -811,7 +852,9 @@
         const targetIndex = inputToTarget[i];
         if (targetIndex == null) continue;
         const expected = wordTarget.charAt(targetIndex);
-        if (value[i] === expected) {
+        const state = inputStates[i];
+        if (state !== "correct" && state !== "wrong") continue;
+        if (state === "correct") {
           wCorrect += 1;
           stats.word.correct += 1;
           applyCorrectStats(expected);
@@ -842,7 +885,7 @@
     if (value !== inputEl.value) inputEl.value = value;
 
     const prevValue = sentenceInput;
-    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget } = evaluateInput(sentenceTarget, value, true);
+    const { correctIndices, wrongIndices, nextTargetIndex, inputToTarget, inputStates } = evaluateInput(sentenceTarget, value, true);
 
     sentenceInput = value;
     sentenceMatched = nextTargetIndex;
@@ -856,7 +899,9 @@
         const targetIndex = inputToTarget[i];
         if (targetIndex == null) continue;
         const expected = sentenceTarget.charAt(targetIndex);
-        if (value[i] === expected) {
+        const state = inputStates[i];
+        if (state !== "correct" && state !== "wrong") continue;
+        if (state === "correct") {
           sCorrect += 1;
           stats.sentence.correct += 1;
           applyCorrectStats(expected);
