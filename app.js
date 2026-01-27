@@ -446,6 +446,38 @@
   let targetCode = null;
   let streak = 0, correct=0, wrong=0;
   let pendingDiacritic = null;
+  const imeInput = document.createElement("input");
+  imeInput.type = "text";
+  imeInput.autocapitalize = "off";
+  imeInput.autocomplete = "off";
+  imeInput.spellcheck = false;
+  imeInput.className = "ime-input";
+  imeInput.setAttribute("aria-hidden", "true");
+  document.body.appendChild(imeInput);
+
+  function focusImeInput() {
+    if (opts.inputMode === "native" && practiceOn && !practicePaused) {
+      imeInput.focus({ preventScroll: true });
+    }
+  }
+
+  function clearImeInput() {
+    imeInput.value = "";
+  }
+
+  function handleImeInput() {
+    if (!practiceOn || practicePaused || opts.inputMode !== "native") {
+      clearImeInput();
+      return;
+    }
+    const value = imeInput.value;
+    if (!value) return;
+    for (const ch of value) {
+      if (!ch) continue;
+      processInput(ch, null);
+    }
+    clearImeInput();
+  }
 
   function pickTarget() {
     const pool = getPool({ useMap: opts.inputMode !== "native" });
@@ -477,6 +509,7 @@
     $("#btnPracticeStart").disabled = true;
     $("#btnPracticePause").disabled = false;
     $("#btnPracticeStop").disabled = false;
+    focusImeInput();
   }
 
   function stopPractice() {
@@ -490,6 +523,7 @@
     $("#feedback").className = "feedback";
     buildKeyboard($("#keyboard"), null);
     $("#targetKana").textContent = "—";
+    clearImeInput();
   }
 
   function pausePractice() {
@@ -499,6 +533,7 @@
     $("#btnPracticePause").disabled = true;
     $("#feedback").textContent = "Paused.";
     $("#feedback").className = "feedback";
+    clearImeInput();
   }
 
   function resumePractice() {
@@ -508,6 +543,7 @@
     $("#btnPracticePause").disabled = false;
     $("#feedback").textContent = "";
     $("#feedback").className = "feedback";
+    focusImeInput();
   }
 
   $("#btnPracticeStart").addEventListener("click", () => {
@@ -670,9 +706,8 @@
     typingMatched = 0;
     typingWrongIndices = new Set();
     typingCorrectIndices = new Set();
-    suppressTypingInput = true;
     const inputEl = $("#typingInput");
-    if (inputEl.value !== "") resetTextInput(inputEl);
+    resetInputField(inputEl, (value) => { suppressTypingInput = value; });
     buildKeyboard($("#keyboard2"), nextNeededCode());
     setTypingUI();
   }
@@ -841,7 +876,7 @@
     wordInput = "";
     wordMatched = 0;
     const wordInputEl = $("#wordInput");
-    if (wordInputEl.value !== "") resetTextInput(wordInputEl);
+    resetInputField(wordInputEl, (value) => { suppressWordInput = value; });
     buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
     setWordUI();
   }
@@ -856,7 +891,7 @@
     sentenceInput = "";
     sentenceMatched = 0;
     const sentenceInputEl = $("#sentenceInput");
-    if (sentenceInputEl.value !== "") resetTextInput(sentenceInputEl);
+    resetInputField(sentenceInputEl, (value) => { suppressSentenceInput = value; });
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
   }
@@ -1010,6 +1045,13 @@
     inputEl.setSelectionRange(0, 0);
   }
 
+  function resetInputField(inputEl, setSuppressFlag) {
+    if (setSuppressFlag) setSuppressFlag(true);
+    resetTextInput(inputEl);
+    inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+    if (setSuppressFlag) setSuppressFlag(false);
+  }
+
   function applyCorrectStats(chars) {
     for (const ch of chars) {
       if (!ch || ch === " ") continue;
@@ -1116,8 +1158,6 @@
     if (wordWrongIndices.size === 0 && wordMatched >= wordTarget.length) {
       wDone += 1;
       stats.word.words += 1;
-      suppressWordInput = true;
-      resetTextInput(inputEl);
       pickWord();
       $("#wordInput").focus();
       return;
@@ -1171,8 +1211,6 @@
     if (sentenceWrongIndices.size === 0 && sentenceMatched >= sentenceTarget.length) {
       sDone += 1;
       stats.sentence.sentences += 1;
-      suppressSentenceInput = true;
-      resetTextInput(inputEl);
       pickSentence();
       $("#sentenceInput").focus();
       return;
@@ -1201,7 +1239,12 @@
     if (e.metaKey || e.ctrlKey) return;
 
     if (typingOn || wordOn || sentenceOn) return;
-    if (opts.inputMode === "native" && !practiceOn) return;
+    if (opts.inputMode === "native") {
+      if (!practiceOn) return;
+      if (e.code === "Space") e.preventDefault();
+      focusImeInput();
+      return;
+    }
 
     const code = e.code;
 
@@ -1268,6 +1311,8 @@
   $("#typingInput").addEventListener("input", handleTypingInputChange);
   $("#wordInput").addEventListener("input", handleWordInputChange);
   $("#sentenceInput").addEventListener("input", handleSentenceInputChange);
+  imeInput.addEventListener("input", handleImeInput);
+  imeInput.addEventListener("compositionend", handleImeInput);
   $("#typingInput").disabled = true;
   $("#wordInput").disabled = true;
   $("#sentenceInput").disabled = true;
