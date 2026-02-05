@@ -20,14 +20,23 @@
       </div>
     </div>
       <div class="meta">
-        <span class="pill">v1.2.15</span>
+        <span class="pill">v1.2.16</span>
         <span class="pill">sakura aura</span>
       </div>
   </header>
 
   <main class="container">
     <section class="card" id="home">
-      <h2>Choose a mode</h2>
+      <h2 class="section-title">Choose a mode</h2>
+      <div class="badgeRow" aria-label="Study tags">
+        <span class="badge">JLPT N5</span>
+        <span class="badge">JLPT N4</span>
+        <span class="badge">JLPT N3</span>
+        <span class="badge">JLPT N2</span>
+        <span class="badge">JLPT N1</span>
+        <span class="badge">Lesson</span>
+        <span class="badge">Section</span>
+      </div>
       <div class="grid2">
         <button class="btn primary" data-nav="practice">Practice: Single Kana (Find the key)</button>
         <button class="btn" data-nav="word">Practice: Words</button>
@@ -45,7 +54,7 @@
 
     <section class="card hidden" id="practice">
       <div class="row">
-        <h2>Practice: Find the key</h2>
+        <h2 class="section-title">Practice: Find the key</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnPracticeStart">Start</button>
@@ -85,7 +94,7 @@
 
     <section class="card hidden" id="typing">
       <div class="row">
-        <h2>Typing Run: Kana stream</h2>
+        <h2 class="section-title">Typing Run: Kana stream</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnTypingStart">Start</button>
@@ -133,7 +142,7 @@
 
     <section class="card hidden" id="word">
       <div class="row">
-        <h2>Practice: Words</h2>
+        <h2 class="section-title">Practice: Words</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnWordStart">Start</button>
@@ -210,7 +219,7 @@
 
     <section class="card hidden" id="sentence">
       <div class="row">
-        <h2>Practice: Sentences</h2>
+        <h2 class="section-title">Practice: Sentences</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnSentenceStart">Start</button>
@@ -257,7 +266,7 @@
 
     <section class="card hidden" id="stats">
       <div class="row">
-        <h2>Stats</h2>
+        <h2 class="section-title">Stats</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnResetStats">Reset stats</button>
@@ -267,7 +276,7 @@
       <div class="grid3" id="statsGrid"></div>
 
       <div class="cardInner">
-        <h3>Kana accuracy heatmap</h3>
+        <h3 class="section-title">Kana accuracy heatmap</h3>
         <div class="small muted">This shows which kana you miss the most. Aim to make the whole grid boring 😄</div>
         <div id="heatmap" class="heatmap"></div>
       </div>
@@ -275,7 +284,7 @@
 
     <section class="card hidden" id="settings">
       <div class="row">
-        <h2>Settings / Keyboard Map</h2>
+        <h2 class="section-title">Settings / Keyboard Map</h2>
         <div class="row gap">
           <button class="btn" data-nav="home">Home</button>
           <button class="btn" id="btnExport">Export map</button>
@@ -331,7 +340,7 @@
       </div>
 
       <div class="cardInner">
-        <h3>Edit key → kana mapping</h3>
+        <h3 class="section-title">Edit key → kana mapping</h3>
         <div class="small muted">
           Click any kana cell to edit. Values should be single kana like <code>あ</code> (you can also use small kana like <code>ゃ</code>).
         </div>
@@ -339,7 +348,7 @@
       </div>
 
       <div class="cardInner">
-        <h3>What to practice</h3>
+        <h3 class="section-title">What to practice</h3>
         <div class="small muted">Toggle sets to focus on. (These determine what gets picked as the target.)</div>
         <div id="sets" class="sets"></div>
       </div>
