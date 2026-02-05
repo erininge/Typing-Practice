@@ -11,6 +11,7 @@
     sets: "kkt_sets_v1",
     stats: "kkt_stats_v1",
     opts: "kkt_opts_v1",
+    wordSets: "kkt_word_sets_v1",
   };
 
   // A basic on-screen keyboard layout (US-ish physical codes). JIS has a few extra keys
@@ -286,11 +287,15 @@
     return obj;
   };
 
+  const defaultWordSets = () => [];
+
   const defaultOpts = () => ({
     layout: "jis",
     inputMode: "native",
     showKeyboard: true,
-    typingTimerEnabled: true
+    typingTimerEnabled: true,
+    wordList: "basic",
+    wordSetId: ""
   });
 
   function loadJSON(key, fallback) {
@@ -302,13 +307,38 @@
   }
   function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 
+  function normalizeWordSets(rawSets) {
+    if (!Array.isArray(rawSets)) return [];
+    const seen = new Set();
+    const normalized = [];
+    for (let i = 0; i < rawSets.length; i += 1) {
+      const entry = rawSets[i] || {};
+      let id = typeof entry.id === "string" ? entry.id.trim() : "";
+      if (!id || seen.has(id)) {
+        id = `custom-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+      }
+      seen.add(id);
+      const name = typeof entry.name === "string" && entry.name.trim()
+        ? entry.name.trim()
+        : `Custom Set ${normalized.length + 1}`;
+      const words = Array.isArray(entry.words)
+        ? entry.words.map(word => String(word).trim()).filter(Boolean)
+        : [];
+      normalized.push({ id, name, words });
+    }
+    return normalized;
+  }
+
   let opts = loadJSON(STORAGE.opts, defaultOpts());
   // normalize older saved options
   if (!opts.inputMode || !["native", "mapped"].includes(opts.inputMode)) opts.inputMode = "native";
   if (typeof opts.showKeyboard !== "boolean") opts.showKeyboard = true;
   if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
+  if (!opts.wordList || !["basic", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
+  if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
+  let wordSets = normalizeWordSets(loadJSON(STORAGE.wordSets, defaultWordSets()));
   let stats = loadJSON(STORAGE.stats, {
     practice: { correct:0, wrong:0, bestStreak:0 },
     typing: { runs:0, bestKpm:0 },
@@ -898,6 +928,33 @@
     return Object.keys(map).find(code => map[code] === ch) || null;
   }
 
+  const wordHintDefault = "Type the word in the text box. Mistakes highlight red on the target line; fix them to advance.";
+
+  function getActiveWordSet() {
+    const selectedId = $("#wordSetSelect")?.value || opts.wordSetId;
+    return wordSets.find(set => set.id === selectedId) || null;
+  }
+
+  function updateWordHint() {
+    const hintEl = $("#wordHint");
+    if (!hintEl) return;
+    const list = $("#wordListSelect")?.value || opts.wordList || "basic";
+    if (list !== "custom") {
+      hintEl.textContent = wordHintDefault;
+      return;
+    }
+    const activeSet = getActiveWordSet();
+    if (!activeSet) {
+      hintEl.textContent = "Create a custom word set to practice with your own kana words.";
+      return;
+    }
+    if (!activeSet.words.length) {
+      hintEl.textContent = "Add words (one per line) to this set to start practicing.";
+      return;
+    }
+    hintEl.textContent = `Custom set: ${activeSet.name}. ${wordHintDefault}`;
+  }
+
   function pickWord() {
     const maxLen = clampInt($("#wordMaxLen").value, 2, 12);
     const list = ($("#wordListSelect").value || "basic");
@@ -908,6 +965,16 @@
       const len = Math.max(2, Math.min(maxLen, 2 + Math.floor(Math.random()*Math.max(1, maxLen-1))));
       wordTarget = "";
       for (let i=0;i<len;i++) wordTarget += pool[Math.floor(Math.random()*pool.length)];
+      wordTyped = "";
+      wordWrongIndices = new Set();
+      wordCorrectIndices = new Set();
+    } else if (list === "custom") {
+      const activeSet = getActiveWordSet();
+      const words = activeSet?.words || [];
+      candidates = words.filter(w => w.length <= maxLen);
+      if (!candidates.length && words.length) candidates = words;
+      if (!candidates.length) candidates = WORD_LISTS.basic.slice();
+      wordTarget = candidates[Math.floor(Math.random()*candidates.length)];
       wordTyped = "";
       wordWrongIndices = new Set();
       wordCorrectIndices = new Set();
@@ -941,6 +1008,88 @@
     resetInputField(sentenceInputEl, (value) => { suppressSentenceInput = value; });
     buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
     setSentenceUI();
+  }
+
+  function saveWordSets() {
+    saveJSON(STORAGE.wordSets, wordSets);
+  }
+
+  function sanitizeWordListInput(value) {
+    return value
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean);
+  }
+
+  function renderWordSetOptions() {
+    const select = $("#wordSetSelect");
+    if (!select) return;
+    select.innerHTML = "";
+    if (!wordSets.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No custom sets yet";
+      opt.disabled = true;
+      opt.selected = true;
+      select.appendChild(opt);
+      return;
+    }
+    for (const set of wordSets) {
+      const opt = document.createElement("option");
+      opt.value = set.id;
+      opt.textContent = set.name;
+      select.appendChild(opt);
+    }
+  }
+
+  function updateWordSetEditor() {
+    const nameInput = $("#wordSetName");
+    const wordsInput = $("#wordSetWords");
+    const deleteBtn = $("#btnWordSetDelete");
+    const addLineBtn = $("#btnWordSetAddLine");
+    const activeSet = getActiveWordSet();
+    const hasSet = !!activeSet;
+    if (nameInput) {
+      nameInput.disabled = !hasSet;
+      nameInput.value = hasSet ? activeSet.name : "";
+    }
+    if (wordsInput) {
+      wordsInput.disabled = !hasSet;
+      wordsInput.value = hasSet ? activeSet.words.join("\n") : "";
+    }
+    if (deleteBtn) deleteBtn.disabled = !hasSet;
+    if (addLineBtn) addLineBtn.disabled = !hasSet;
+  }
+
+  function updateWordListSelectState() {
+    const listSelect = $("#wordListSelect");
+    if (!listSelect) return;
+    const customOption = listSelect.querySelector('option[value="custom"]');
+    if (customOption) customOption.disabled = wordSets.length === 0;
+    if (wordSets.length === 0 && listSelect.value === "custom") {
+      listSelect.value = "basic";
+      opts.wordList = "basic";
+      saveJSON(STORAGE.opts, opts);
+    }
+    updateWordHint();
+  }
+
+  function selectWordSet(id) {
+    const select = $("#wordSetSelect");
+    if (!select) return;
+    if (id && wordSets.some(set => set.id === id)) {
+      select.value = id;
+      opts.wordSetId = id;
+    } else if (wordSets.length) {
+      select.value = wordSets[0].id;
+      opts.wordSetId = wordSets[0].id;
+    } else {
+      select.value = "";
+      opts.wordSetId = "";
+    }
+    saveJSON(STORAGE.opts, opts);
+    updateWordSetEditor();
+    updateWordHint();
   }
 
   function startWord() {
@@ -1364,6 +1513,91 @@
   $("#wordInput").disabled = true;
   $("#sentenceInput").disabled = true;
 
+  // ---- Word Sets UI ----
+  $("#wordListSelect").value = opts.wordList || "basic";
+  renderWordSetOptions();
+  selectWordSet(opts.wordSetId);
+  updateWordListSelectState();
+
+  $("#wordListSelect").addEventListener("change", (e) => {
+    opts.wordList = e.target.value;
+    saveJSON(STORAGE.opts, opts);
+    updateWordListSelectState();
+    if (wordOn && !wordPaused) pickWord();
+  });
+
+  $("#wordSetSelect").addEventListener("change", (e) => {
+    opts.wordSetId = e.target.value;
+    saveJSON(STORAGE.opts, opts);
+    updateWordSetEditor();
+    updateWordHint();
+    if (wordOn && !wordPaused && $("#wordListSelect").value === "custom") pickWord();
+  });
+
+  $("#wordSetName").addEventListener("input", (e) => {
+    const activeSet = getActiveWordSet();
+    if (!activeSet) return;
+    const value = e.target.value.trim();
+    activeSet.name = value || activeSet.name;
+    saveWordSets();
+    renderWordSetOptions();
+    selectWordSet(activeSet.id);
+  });
+
+  $("#wordSetWords").addEventListener("input", (e) => {
+    const activeSet = getActiveWordSet();
+    if (!activeSet) return;
+    activeSet.words = sanitizeWordListInput(e.target.value);
+    saveWordSets();
+    updateWordHint();
+    if (wordOn && !wordPaused && $("#wordListSelect").value === "custom") pickWord();
+  });
+
+  $("#btnWordSetAdd").addEventListener("click", () => {
+    const nameInput = $("#wordSetName");
+    const rawName = nameInput?.value.trim();
+    const baseName = rawName || `Custom Set ${wordSets.length + 1}`;
+    const name = wordSets.some(set => set.name === baseName)
+      ? `${baseName} (${wordSets.length + 1})`
+      : baseName;
+    const newSet = {
+      id: `custom-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      name,
+      words: []
+    };
+    wordSets.push(newSet);
+    saveWordSets();
+    renderWordSetOptions();
+    selectWordSet(newSet.id);
+    updateWordListSelectState();
+    if (nameInput) nameInput.value = newSet.name;
+    const wordsInput = $("#wordSetWords");
+    if (wordsInput) wordsInput.focus();
+  });
+
+  $("#btnWordSetDelete").addEventListener("click", () => {
+    const activeSet = getActiveWordSet();
+    if (!activeSet) return;
+    if (!confirm(`Delete "${activeSet.name}"?`)) return;
+    wordSets = wordSets.filter(set => set.id !== activeSet.id);
+    saveWordSets();
+    renderWordSetOptions();
+    selectWordSet(opts.wordSetId);
+    updateWordListSelectState();
+    if (wordOn && !wordPaused && $("#wordListSelect").value === "custom") pickWord();
+  });
+
+  $("#btnWordSetAddLine").addEventListener("click", () => {
+    const wordsInput = $("#wordSetWords");
+    if (!wordsInput || wordsInput.disabled) return;
+    if (wordsInput.value && !wordsInput.value.endsWith("\n")) {
+      wordsInput.value += "\n";
+    } else if (!wordsInput.value) {
+      wordsInput.value = "";
+    }
+    wordsInput.focus();
+  });
+
   // ---- Settings UI ----
   function renderSettings() {
     $("#layoutSelect").value = opts.layout || "jis";
@@ -1473,7 +1707,7 @@
 
   // Export/Import map
   $("#btnExport").addEventListener("click", async () => {
-    const payload = { map, enabledSets, opts, version: 1 };
+    const payload = { map, enabledSets, opts, wordSets, version: 1 };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1494,10 +1728,15 @@
       if (payload.map && typeof payload.map === "object") map = payload.map;
       if (payload.enabledSets && typeof payload.enabledSets === "object") enabledSets = payload.enabledSets;
       if (payload.opts && typeof payload.opts === "object") opts = {...opts, ...payload.opts};
+      if (Array.isArray(payload.wordSets)) wordSets = normalizeWordSets(payload.wordSets);
       saveJSON(STORAGE.map, map);
       saveJSON(STORAGE.sets, enabledSets);
       saveJSON(STORAGE.opts, opts);
+      saveJSON(STORAGE.wordSets, wordSets);
       renderSettings();
+      renderWordSetOptions();
+      selectWordSet(opts.wordSetId);
+      updateWordListSelectState();
       alert("Imported map ✅");
     } catch {
       alert("Import failed. Make sure it's a JSON export from this app.");
