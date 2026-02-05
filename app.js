@@ -14,8 +14,7 @@
     wordSets: "kkt_word_sets_v1",
   };
 
-  const EFFECT_LEVELS = ["off", "low", "high"];
-  const PETAL_COUNTS = { off: 0, low: 14, high: 28 };
+  const BACKGROUND_VIDEO_SRC = "icons/Sakura.mp4";
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   // A basic on-screen keyboard layout (US-ish physical codes). JIS has a few extra keys
@@ -300,7 +299,7 @@
     typingTimerEnabled: true,
     wordList: "basic",
     wordSetId: "",
-    backgroundEffects: "off"
+    backgroundVideo: "off"
   });
 
   function loadJSON(key, fallback) {
@@ -341,7 +340,7 @@
   if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
   if (!opts.wordList || !["basic", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
-  if (!EFFECT_LEVELS.includes(opts.backgroundEffects)) opts.backgroundEffects = "off";
+  if (!["on", "off"].includes(opts.backgroundVideo)) opts.backgroundVideo = "off";
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
   let wordSets = normalizeWordSets(loadJSON(STORAGE.wordSets, defaultWordSets()));
@@ -383,54 +382,67 @@
     }
   }
 
-  const petalField = $("#petal-field");
+  const backgroundVideoContainer = $("#background-video");
 
-  function getBackgroundEffectsLevel() {
-    if (reducedMotionQuery.matches) return "off";
-    return EFFECT_LEVELS.includes(opts.backgroundEffects) ? opts.backgroundEffects : "off";
+  function shouldShowBackgroundVideo() {
+    if (reducedMotionQuery.matches) return false;
+    return opts.backgroundVideo === "on";
   }
 
-  function buildPetals(level) {
-    if (!petalField) return;
-    petalField.innerHTML = "";
-    const count = PETAL_COUNTS[level] || 0;
-    if (count === 0) return;
-    for (let i = 0; i < count; i += 1) {
-      const petal = document.createElement("span");
-      petal.className = "petal";
-      const size = 8 + Math.random() * 10;
-      const x = Math.random() * 100;
-      const drift = (Math.random() * 24 - 12).toFixed(2);
-      const duration = 18 + Math.random() * 16;
-      const delay = -Math.random() * 20;
-      const opacity = 0.2 + Math.random() * 0.25;
-      petal.style.setProperty("--size", `${size.toFixed(2)}px`);
-      petal.style.setProperty("--x", `${x.toFixed(2)}vw`);
-      petal.style.setProperty("--drift", `${drift}vw`);
-      petal.style.setProperty("--duration", `${duration.toFixed(2)}s`);
-      petal.style.setProperty("--delay", `${delay.toFixed(2)}s`);
-      petal.style.setProperty("--opacity", `${opacity.toFixed(2)}`);
-      petalField.appendChild(petal);
-    }
-  }
-
-  function syncBackgroundEffectsUI() {
-    const select = $("#backgroundEffectsSelect");
+  function syncBackgroundVideoUI() {
+    const select = $("#backgroundVideoSelect");
     if (!select) return;
     const reduced = reducedMotionQuery.matches;
+    if (reduced && opts.backgroundVideo !== "off") {
+      opts.backgroundVideo = "off";
+      saveJSON(STORAGE.opts, opts);
+    }
     select.disabled = reduced;
-    select.value = reduced ? "off" : (opts.backgroundEffects || "off");
-    const note = $("#backgroundEffectsNote");
+    select.value = reduced ? "off" : (opts.backgroundVideo || "off");
+    const note = $("#backgroundVideoNote");
     if (note) {
       note.textContent = reduced
         ? "Disabled because Reduce Motion is enabled on your device."
-        : "Subtle cherry blossom petals behind the UI.";
+        : "Sakura video backdrop behind the UI.";
     }
   }
 
-  function updateBackgroundEffects() {
-    const level = getBackgroundEffectsLevel();
-    buildPetals(level);
+  function attachVideoFallback(video) {
+    const attemptPlay = () => {
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        return playPromise;
+      }
+      return Promise.resolve();
+    };
+    attemptPlay().catch(() => {
+      const handler = () => attemptPlay().catch(() => {});
+      window.addEventListener("pointerdown", handler, { once: true });
+      window.addEventListener("touchstart", handler, { once: true });
+      window.addEventListener("keydown", handler, { once: true });
+    });
+  }
+
+  function renderBackgroundVideo() {
+    if (!backgroundVideoContainer) return;
+    backgroundVideoContainer.innerHTML = "";
+    if (!shouldShowBackgroundVideo()) return;
+    const video = document.createElement("video");
+    video.className = "background-video__media";
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.src = BACKGROUND_VIDEO_SRC;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("muted", "");
+    video.setAttribute("autoplay", "");
+    video.setAttribute("loop", "");
+    const overlay = document.createElement("div");
+    overlay.className = "background-video__overlay";
+    backgroundVideoContainer.append(video, overlay);
+    attachVideoFallback(video);
   }
 
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
@@ -1661,7 +1673,7 @@
     $("#keyboardToggle").value = opts.showKeyboard ? "on" : "off";
     $("#typingTimerToggle").value = opts.typingTimerEnabled ? "on" : "off";
     $("#tTimer").disabled = !opts.typingTimerEnabled;
-    syncBackgroundEffectsUI();
+    syncBackgroundVideoUI();
 
     renderMapTable();
     renderSets();
@@ -1708,16 +1720,16 @@
     setTypingUI();
   });
 
-  $("#backgroundEffectsSelect").addEventListener("change", (e) => {
-    opts.backgroundEffects = e.target.value;
+  $("#backgroundVideoSelect").addEventListener("change", (e) => {
+    opts.backgroundVideo = e.target.value;
     saveJSON(STORAGE.opts, opts);
-    updateBackgroundEffects();
-    syncBackgroundEffectsUI();
+    renderBackgroundVideo();
+    syncBackgroundVideoUI();
   });
 
   reducedMotionQuery.addEventListener("change", () => {
-    syncBackgroundEffectsUI();
-    updateBackgroundEffects();
+    syncBackgroundVideoUI();
+    renderBackgroundVideo();
   });
 
 
@@ -1887,8 +1899,8 @@
   buildKeyboard($("#keyboard2"), null);
   applyKeyboardVisibility();
   $("#tTimer").disabled = !opts.typingTimerEnabled;
-  syncBackgroundEffectsUI();
-  updateBackgroundEffects();
+  syncBackgroundVideoUI();
+  renderBackgroundVideo();
   nav("home");
 
   // PWA register

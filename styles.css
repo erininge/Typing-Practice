@@ -24,41 +24,27 @@ body{
   position:relative;
 }
 
-.petal-field{
+.background-video{
   position:fixed;
   inset:0;
   pointer-events:none;
   z-index:0;
   overflow:hidden;
 }
-.petal-field::after{
-  content:"";
+.background-video video{
   position:absolute;
   inset:0;
-  background: rgba(11,15,20,.12);
-  backdrop-filter: blur(0.4px);
+  width:100vw;
+  height:100vh;
+  object-fit:cover;
+  opacity:0.32;
+  filter: brightness(1.35) saturate(1.35) contrast(1.02);
+  mix-blend-mode: screen;
 }
-.petal{
+.background-video__overlay{
   position:absolute;
-  top:-15vh;
-  left:0;
-  width:var(--size);
-  height:var(--size);
-  opacity:var(--opacity);
-  background: radial-gradient(circle at 30% 30%, rgba(255,245,248,.9), rgba(255,183,197,.55) 45%, rgba(219,134,160,.45) 80%);
-  border-radius: 60% 40% 60% 40%;
-  filter: blur(0.2px);
-  animation: petal-fall var(--duration) linear infinite;
-  animation-delay: var(--delay);
-  transform: translate3d(var(--x), -15vh, 0) rotate(0deg);
-}
-@keyframes petal-fall{
-  0%{ transform: translate3d(var(--x), -15vh, 0) rotate(0deg); opacity:0; }
-  10%{ opacity:var(--opacity); }
-  100%{ transform: translate3d(calc(var(--x) + var(--drift)), 110vh, 0) rotate(360deg); opacity:0; }
-}
-@media (prefers-reduced-motion: reduce){
-  .petal{ animation: none; }
+  inset:0;
+  background: rgba(255,255,255,.1);
 }
 
 header.topbar,
