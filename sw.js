@@ -1,5 +1,5 @@
 // Simple cache-first service worker for offline play
-const CACHE = "kana-keys-v1.2.13-4f9c2d7b0a";
+const CACHE = "kana-keys-v1.2.14-8b27e2c9f1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./icons/Sakura.mp4",
   "./sw.js"
 ];
 
