@@ -14,6 +14,10 @@
     wordSets: "kkt_word_sets_v1",
   };
 
+  const EFFECT_LEVELS = ["off", "low", "high"];
+  const PETAL_COUNTS = { off: 0, low: 14, high: 28 };
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
   // A basic on-screen keyboard layout (US-ish physical codes). JIS has a few extra keys
   // that browsers may surface as IntlYen / IntlRo / etc depending on device.
   const KEYBOARD_ROWS = [
@@ -295,7 +299,8 @@
     showKeyboard: true,
     typingTimerEnabled: true,
     wordList: "basic",
-    wordSetId: ""
+    wordSetId: "",
+    backgroundEffects: "off"
   });
 
   function loadJSON(key, fallback) {
@@ -336,6 +341,7 @@
   if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
   if (!opts.wordList || !["basic", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
+  if (!EFFECT_LEVELS.includes(opts.backgroundEffects)) opts.backgroundEffects = "off";
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
   let wordSets = normalizeWordSets(loadJSON(STORAGE.wordSets, defaultWordSets()));
@@ -375,6 +381,56 @@
       pauseAllModes();
       return;
     }
+  }
+
+  const petalField = $("#petal-field");
+
+  function getBackgroundEffectsLevel() {
+    if (reducedMotionQuery.matches) return "off";
+    return EFFECT_LEVELS.includes(opts.backgroundEffects) ? opts.backgroundEffects : "off";
+  }
+
+  function buildPetals(level) {
+    if (!petalField) return;
+    petalField.innerHTML = "";
+    const count = PETAL_COUNTS[level] || 0;
+    if (count === 0) return;
+    for (let i = 0; i < count; i += 1) {
+      const petal = document.createElement("span");
+      petal.className = "petal";
+      const size = 8 + Math.random() * 10;
+      const x = Math.random() * 100;
+      const drift = (Math.random() * 24 - 12).toFixed(2);
+      const duration = 18 + Math.random() * 16;
+      const delay = -Math.random() * 20;
+      const opacity = 0.2 + Math.random() * 0.25;
+      petal.style.setProperty("--size", `${size.toFixed(2)}px`);
+      petal.style.setProperty("--x", `${x.toFixed(2)}vw`);
+      petal.style.setProperty("--drift", `${drift}vw`);
+      petal.style.setProperty("--duration", `${duration.toFixed(2)}s`);
+      petal.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+      petal.style.setProperty("--opacity", `${opacity.toFixed(2)}`);
+      petalField.appendChild(petal);
+    }
+  }
+
+  function syncBackgroundEffectsUI() {
+    const select = $("#backgroundEffectsSelect");
+    if (!select) return;
+    const reduced = reducedMotionQuery.matches;
+    select.disabled = reduced;
+    select.value = reduced ? "off" : (opts.backgroundEffects || "off");
+    const note = $("#backgroundEffectsNote");
+    if (note) {
+      note.textContent = reduced
+        ? "Disabled because Reduce Motion is enabled on your device."
+        : "Subtle cherry blossom petals behind the UI.";
+    }
+  }
+
+  function updateBackgroundEffects() {
+    const level = getBackgroundEffectsLevel();
+    buildPetals(level);
   }
 
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
@@ -1605,6 +1661,7 @@
     $("#keyboardToggle").value = opts.showKeyboard ? "on" : "off";
     $("#typingTimerToggle").value = opts.typingTimerEnabled ? "on" : "off";
     $("#tTimer").disabled = !opts.typingTimerEnabled;
+    syncBackgroundEffectsUI();
 
     renderMapTable();
     renderSets();
@@ -1649,6 +1706,18 @@
       }
     }
     setTypingUI();
+  });
+
+  $("#backgroundEffectsSelect").addEventListener("change", (e) => {
+    opts.backgroundEffects = e.target.value;
+    saveJSON(STORAGE.opts, opts);
+    updateBackgroundEffects();
+    syncBackgroundEffectsUI();
+  });
+
+  reducedMotionQuery.addEventListener("change", () => {
+    syncBackgroundEffectsUI();
+    updateBackgroundEffects();
   });
 
 
@@ -1818,6 +1887,8 @@
   buildKeyboard($("#keyboard2"), null);
   applyKeyboardVisibility();
   $("#tTimer").disabled = !opts.typingTimerEnabled;
+  syncBackgroundEffectsUI();
+  updateBackgroundEffects();
   nav("home");
 
   // PWA register
