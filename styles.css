@@ -43,7 +43,7 @@
   --radiusSm:14px;
   --radiusXs:12px;
   --radiusPill:999px;
-  --borderWidth:2px;
+  --borderWidth:3px;
 }
 
 [data-theme="dark"]{
@@ -90,7 +90,7 @@
   --radiusSm:14px;
   --radiusXs:12px;
   --radiusPill:999px;
-  --borderWidth:2px;
+  --borderWidth:3px;
 }
 
 *{box-sizing:border-box}
