@@ -1778,9 +1778,14 @@
         enabledSets[s.id] = cb.checked;
         saveJSON(STORAGE.sets, enabledSets);
       });
+      const star = document.createElement("span");
+      star.className = "star";
+      star.setAttribute("aria-hidden", "true");
+      star.textContent = "★";
       const span = document.createElement("span");
       span.textContent = s.name;
       chip.appendChild(cb);
+      chip.appendChild(star);
       chip.appendChild(span);
       host.appendChild(chip);
     }
