@@ -19,7 +19,7 @@
       </div>
     </div>
       <div class="meta">
-        <span class="pill">v1.2.11</span>
+        <span class="pill">v1.2.12</span>
         <span class="pill">build input fix</span>
       </div>
   </header>
@@ -160,6 +160,7 @@
             <select id="wordListSelect">
               <option value="basic">Basic (built-in)</option>
               <option value="all">All enabled kana (random)</option>
+              <option value="custom">Custom set</option>
             </select>
           </label>
           <label class="field">
@@ -167,6 +168,31 @@
             <input id="wordMaxLen" type="number" min="2" max="12" value="6" />
           </label>
         </div>
+
+        <div class="row gap">
+          <label class="field">
+            <span>Word sets</span>
+            <select id="wordSetSelect"></select>
+          </label>
+          <label class="field grow">
+            <span>Set name</span>
+            <input id="wordSetName" type="text" placeholder="Custom set name" />
+          </label>
+          <div class="field wordSetActions">
+            <span>Actions</span>
+            <div class="row gap">
+              <button class="btn smallBtn" id="btnWordSetAdd" type="button">Add new set</button>
+              <button class="btn smallBtn" id="btnWordSetDelete" type="button">Delete set</button>
+            </div>
+          </div>
+        </div>
+        <label class="field grow">
+          <span>Words (one per line)</span>
+          <textarea id="wordSetWords" rows="6" placeholder="あめ&#10;さくら&#10;やさい"></textarea>
+          <div class="row gap">
+            <button class="btn smallBtn" id="btnWordSetAddLine" type="button">Add word line</button>
+          </div>
+        </label>
       </div>
 
       <div class="kbdWrap">

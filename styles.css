@@ -122,6 +122,7 @@ h3{margin:0 0 10px 0}
 }
 
 .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.grow{flex:1 1 240px}
 .gap{gap:8px}
 .hint{
   margin-top:12px;
@@ -304,6 +305,19 @@ code{color: var(--accent)}
   padding:10px;
   color:var(--text);
   font-weight:700;
+}
+.field textarea{
+  background: rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  padding:10px;
+  color:var(--text);
+  font-weight:700;
+  resize: vertical;
+  min-height: 120px;
+}
+.wordSetActions .row{
+  justify-content:flex-start;
 }
 
 .footer{
