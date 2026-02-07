@@ -381,6 +381,7 @@ code{color: var(--accent)}
 .statBox .v{font-weight:900; font-size:18px; margin-top:3px}
 
 .kbdWrap{margin-top:14px}
+.kbdStartHidden{display:none}
 .kbdHeader{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px}
 .kbdTitle{font-weight:800}
 

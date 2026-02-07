@@ -725,6 +725,12 @@
     });
   }
 
+  function setStartKeyboardVisibility(id, visible) {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    wrap.classList.toggle("kbdStartHidden", !visible);
+  }
+
   function applyFingerGuideVisibility() {
     document.body.classList.toggle("showFingerGuide", opts.showFingerGuide);
   }
@@ -1046,6 +1052,7 @@
     $("#btnTypingPause").disabled = true;
     $("#btnTypingStop").disabled = true;
     $("#typingInput").disabled = true;
+    setStartKeyboardVisibility("typingKeyboardWrap", false);
 
     const dtMin = tElapsedMs / 60000;
     const kpm = dtMin > 0 ? Math.round((tCorrect / dtMin)) : 0;
@@ -1119,6 +1126,7 @@
     $("#wordInput").disabled = true;
     $("#sentenceInput").disabled = true;
 
+    setStartKeyboardVisibility("typingKeyboardWrap", true);
     buildKeyboard($("#keyboard2"), nextNeededCode());
     tickTypingTimer();
     if (opts.typingTimerEnabled) {
@@ -1153,6 +1161,7 @@
     if (opts.typingTimerEnabled) {
       tTimerId = setInterval(tickTypingTimer, 250);
     }
+    setStartKeyboardVisibility("typingKeyboardWrap", true);
     $("#typingInput").focus();
     setTypingUI();
   }
@@ -1412,6 +1421,7 @@
     $("#wordInput").disabled = false;
     $("#typingInput").disabled = true;
     $("#sentenceInput").disabled = true;
+    setStartKeyboardVisibility("wordKeyboardWrap", true);
     pickWord();
     $("#wordInput").focus();
   }
@@ -1431,6 +1441,7 @@
     suppressWordInput = false;
     $("#wordInput").disabled = true;
     buildKeyboard($("#keyboardWord"), null);
+    setStartKeyboardVisibility("wordKeyboardWrap", false);
     setWordUI();
   }
 
@@ -1456,6 +1467,7 @@
     $("#sentenceInput").disabled = false;
     $("#typingInput").disabled = true;
     $("#wordInput").disabled = true;
+    setStartKeyboardVisibility("sentenceKeyboardWrap", true);
     pickSentence();
     $("#sentenceInput").focus();
   }
@@ -1475,6 +1487,7 @@
     suppressSentenceInput = false;
     $("#sentenceInput").disabled = true;
     buildKeyboard($("#keyboardSentence"), null);
+    setStartKeyboardVisibility("sentenceKeyboardWrap", false);
     setSentenceUI();
   }
 
@@ -1492,6 +1505,7 @@
     $("#wordInput").disabled = false;
     $("#btnWordStart").disabled = true;
     $("#btnWordPause").disabled = false;
+    setStartKeyboardVisibility("wordKeyboardWrap", true);
     $("#wordInput").focus();
   }
 
@@ -1509,6 +1523,7 @@
     $("#sentenceInput").disabled = false;
     $("#btnSentenceStart").disabled = true;
     $("#btnSentencePause").disabled = false;
+    setStartKeyboardVisibility("sentenceKeyboardWrap", true);
     $("#sentenceInput").focus();
   }
 
