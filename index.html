@@ -124,6 +124,31 @@
         <input class="typingLine typed input typingInputField" id="typingInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type here..." />
         <div class="small muted">Press Start to begin. The timer starts only after you press Start. Type in the box like a normal text field (your OS/IME input). Mistakes highlight in the passage.</div>
 
+        <div class="kbdWrap kbdStartHidden" id="typingKeyboardWrap">
+          <div class="kbdHeader">
+            <div>
+              <div class="kbdTitle">On-screen keyboard</div>
+              <div class="small muted">Highlights the next key you need.</div>
+            </div>
+          </div>
+          <div class="kbdLegend" data-finger-guide>
+            <div class="kbdLegendTitle">Finger guide</div>
+            <div class="kbdLegendItems">
+              <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+              <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+              <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+              <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+              <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+              <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+              <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+              <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+              <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+            </div>
+            <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
+          </div>
+          <div id="keyboard2" class="keyboard" aria-label="Keyboard"></div>
+        </div>
+
         <div class="scoreRow">
           <div class="statBox"><div class="k">Time</div><div class="v" id="tTime">—</div></div>
           <div class="statBox"><div class="k">KPM</div><div class="v" id="tKpm">—</div></div>
@@ -149,31 +174,6 @@
           </label>
         </div>
       </div>
-
-      <div class="kbdWrap">
-        <div class="kbdHeader">
-          <div>
-            <div class="kbdTitle">On-screen keyboard</div>
-            <div class="small muted">Highlights the next key you need.</div>
-          </div>
-        </div>
-        <div class="kbdLegend" data-finger-guide>
-          <div class="kbdLegendTitle">Finger guide</div>
-          <div class="kbdLegendItems">
-            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
-            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
-            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
-            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
-            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
-            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
-            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
-            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
-            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
-          </div>
-          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
-        </div>
-        <div id="keyboard2" class="keyboard" aria-label="Keyboard"></div>
-      </div>
     </section>
 
 
@@ -193,6 +193,32 @@
         <div class="typingLine typed inputDisplay" id="wordTyped"></div>
         <input class="typingLine typed input typingInputField" id="wordInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the word..." />
         <div class="small muted" id="wordHint">Type the word in the text box. Mistakes highlight red on the target line; fix them to advance.</div>
+
+        <div class="kbdWrap kbdStartHidden" id="wordKeyboardWrap">
+          <div class="kbdHeader">
+            <div>
+              <div class="kbdTitle">On-screen keyboard</div>
+              <div class="small muted">Highlights the next key you need.</div>
+            </div>
+            <button class="btn smallBtn" data-nav="settings">Edit map</button>
+          </div>
+          <div class="kbdLegend" data-finger-guide>
+            <div class="kbdLegendTitle">Finger guide</div>
+            <div class="kbdLegendItems">
+              <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+              <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+              <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+              <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+              <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+              <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+              <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+              <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+              <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+            </div>
+            <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
+          </div>
+          <div id="keyboardWord" class="keyboard" aria-label="Keyboard"></div>
+        </div>
 
         <div class="scoreRow">
           <div class="statBox"><div class="k">Words</div><div class="v" id="wDone">0</div></div>
@@ -241,32 +267,6 @@
           </div>
         </label>
       </div>
-
-      <div class="kbdWrap">
-        <div class="kbdHeader">
-          <div>
-            <div class="kbdTitle">On-screen keyboard</div>
-            <div class="small muted">Highlights the next key you need.</div>
-          </div>
-          <button class="btn smallBtn" data-nav="settings">Edit map</button>
-        </div>
-        <div class="kbdLegend" data-finger-guide>
-          <div class="kbdLegendTitle">Finger guide</div>
-          <div class="kbdLegendItems">
-            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
-            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
-            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
-            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
-            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
-            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
-            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
-            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
-            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
-          </div>
-          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
-        </div>
-        <div id="keyboardWord" class="keyboard" aria-label="Keyboard"></div>
-      </div>
     </section>
 
     <section class="card hidden" id="sentence">
@@ -286,6 +286,32 @@
         <input class="typingLine typed input typingInputField" id="sentenceInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the sentence..." />
         <div class="small muted" id="sentenceHint">Type the sentence in the text box. Spaces are optional (you can press Space to match a space). Mistakes highlight red on the passage; fix them to advance.</div>
 
+        <div class="kbdWrap kbdStartHidden" id="sentenceKeyboardWrap">
+          <div class="kbdHeader">
+            <div>
+              <div class="kbdTitle">On-screen keyboard</div>
+              <div class="small muted">Highlights the next key you need.</div>
+            </div>
+            <button class="btn smallBtn" data-nav="settings">Edit map</button>
+          </div>
+          <div class="kbdLegend" data-finger-guide>
+            <div class="kbdLegendTitle">Finger guide</div>
+            <div class="kbdLegendItems">
+              <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+              <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+              <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+              <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+              <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+              <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+              <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+              <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+              <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+            </div>
+            <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
+          </div>
+          <div id="keyboardSentence" class="keyboard" aria-label="Keyboard"></div>
+        </div>
+
         <div class="scoreRow">
           <div class="statBox"><div class="k">Sentences</div><div class="v" id="sDone">0</div></div>
           <div class="statBox"><div class="k">Correct keys</div><div class="v" id="sCorrect">0</div></div>
@@ -301,32 +327,6 @@
             </select>
           </label>
         </div>
-      </div>
-
-      <div class="kbdWrap">
-        <div class="kbdHeader">
-          <div>
-            <div class="kbdTitle">On-screen keyboard</div>
-            <div class="small muted">Highlights the next key you need.</div>
-          </div>
-          <button class="btn smallBtn" data-nav="settings">Edit map</button>
-        </div>
-        <div class="kbdLegend" data-finger-guide>
-          <div class="kbdLegendTitle">Finger guide</div>
-          <div class="kbdLegendItems">
-            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
-            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
-            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
-            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
-            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
-            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
-            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
-            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
-            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
-          </div>
-          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
-        </div>
-        <div id="keyboardSentence" class="keyboard" aria-label="Keyboard"></div>
       </div>
     </section>
 
