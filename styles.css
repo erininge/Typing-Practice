@@ -39,6 +39,15 @@
   --textDim:rgba(242,246,255,.75);
   --textFaint:rgba(242,246,255,.45);
   --videoOverlay:rgba(7,9,15,.4);
+  --fingerLp:#ffb7d0;
+  --fingerLr:#ffcc9a;
+  --fingerLm:#ffe89a;
+  --fingerLi:#c9f1a5;
+  --fingerRi:#a6f0e2;
+  --fingerRm:#a6d7ff;
+  --fingerRr:#c9b6ff;
+  --fingerRp:#f1a6ff;
+  --fingerTh:#f2f6ff;
   --radius:18px;
   --radiusSm:14px;
   --radiusXs:12px;
@@ -86,6 +95,15 @@
   --textDim:rgba(242,246,255,.75);
   --textFaint:rgba(242,246,255,.45);
   --videoOverlay:rgba(7,9,15,.4);
+  --fingerLp:#ffb7d0;
+  --fingerLr:#ffcc9a;
+  --fingerLm:#ffe89a;
+  --fingerLi:#c9f1a5;
+  --fingerRi:#a6f0e2;
+  --fingerRm:#a6d7ff;
+  --fingerRr:#c9b6ff;
+  --fingerRp:#f1a6ff;
+  --fingerTh:#f2f6ff;
   --radius:18px;
   --radiusSm:14px;
   --radiusXs:12px;
@@ -368,13 +386,23 @@ code{color: var(--accent)}
 
 .keyboard{
   display:flex;
-  flex-direction:column;
-  gap:8px;
+  flex-direction:row;
+  flex-wrap:wrap;
+  gap:16px;
   padding:10px;
   border-radius:var(--radius);
   border:var(--borderWidth) solid var(--border);
   background: var(--overlaySoft);
   overflow-x:auto;
+}
+.kbdBlock{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.kbdBlock--numpad{
+  padding-left:8px;
+  border-left:var(--borderWidth) solid var(--line);
 }
 .krow{display:flex; gap:8px}
 .key{
@@ -395,9 +423,85 @@ code{color: var(--accent)}
   border-color: var(--accentBorder);
   box-shadow: 0 0 0 3px var(--accentGlow);
 }
+.key.home{
+  box-shadow: inset 0 0 0 2px var(--accentBorder);
+}
 .key.pressed{
   transform: translateY(1px);
   background: var(--glassHover);
+}
+.fingerDot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  margin:6px auto 0;
+  display:none;
+}
+.showFingerGuide .fingerDot{
+  display:block;
+}
+.showFingerGuide .key[data-finger="lp"]{border-color:var(--fingerLp)}
+.showFingerGuide .key[data-finger="lr"]{border-color:var(--fingerLr)}
+.showFingerGuide .key[data-finger="lm"]{border-color:var(--fingerLm)}
+.showFingerGuide .key[data-finger="li"]{border-color:var(--fingerLi)}
+.showFingerGuide .key[data-finger="ri"]{border-color:var(--fingerRi)}
+.showFingerGuide .key[data-finger="rm"]{border-color:var(--fingerRm)}
+.showFingerGuide .key[data-finger="rr"]{border-color:var(--fingerRr)}
+.showFingerGuide .key[data-finger="rp"]{border-color:var(--fingerRp)}
+.showFingerGuide .key[data-finger="th"]{border-color:var(--fingerTh)}
+.showFingerGuide .key[data-finger="lp"] .fingerDot{background:var(--fingerLp)}
+.showFingerGuide .key[data-finger="lr"] .fingerDot{background:var(--fingerLr)}
+.showFingerGuide .key[data-finger="lm"] .fingerDot{background:var(--fingerLm)}
+.showFingerGuide .key[data-finger="li"] .fingerDot{background:var(--fingerLi)}
+.showFingerGuide .key[data-finger="ri"] .fingerDot{background:var(--fingerRi)}
+.showFingerGuide .key[data-finger="rm"] .fingerDot{background:var(--fingerRm)}
+.showFingerGuide .key[data-finger="rr"] .fingerDot{background:var(--fingerRr)}
+.showFingerGuide .key[data-finger="rp"] .fingerDot{background:var(--fingerRp)}
+.showFingerGuide .key[data-finger="th"] .fingerDot{background:var(--fingerTh)}
+
+.kbdLegend{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:8px 10px;
+  border-radius:var(--radiusSm);
+  border:var(--borderWidth) solid var(--borderSoft);
+  background: var(--glassSoft);
+  margin-bottom:10px;
+}
+.kbdLegendTitle{font-weight:700; font-size:13px}
+.kbdLegendItems{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  font-size:12px;
+}
+.legendItem{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--textSoft);
+}
+.legendDot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--textSoft);
+}
+.legendItem.finger-lp .legendDot{background:var(--fingerLp)}
+.legendItem.finger-lr .legendDot{background:var(--fingerLr)}
+.legendItem.finger-lm .legendDot{background:var(--fingerLm)}
+.legendItem.finger-li .legendDot{background:var(--fingerLi)}
+.legendItem.finger-ri .legendDot{background:var(--fingerRi)}
+.legendItem.finger-rm .legendDot{background:var(--fingerRm)}
+.legendItem.finger-rr .legendDot{background:var(--fingerRr)}
+.legendItem.finger-rp .legendDot{background:var(--fingerRp)}
+.legendItem.finger-th .legendDot{background:var(--fingerTh)}
+.showFingerGuide [data-finger-guide]{
+  display:flex;
+}
+[data-finger-guide]{
+  display:none;
 }
 
 .typingPanel{

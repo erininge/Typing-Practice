@@ -17,9 +17,9 @@
   const BACKGROUND_VIDEO_SRC = "icons/Sakura.mp4";
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // A basic on-screen keyboard layout (US-ish physical codes). JIS has a few extra keys
-  // that browsers may surface as IntlYen / IntlRo / etc depending on device.
-  const KEYBOARD_ROWS = [
+  // On-screen keyboard layouts (US-ish physical codes). JIS has extra keys that may
+  // surface as IntlYen / IntlRo / etc depending on device.
+  const WINDOWS_ROWS = [
     // Row 1 (digits)
     [
       {code:"Backquote", label:"`"},
@@ -88,12 +88,213 @@
     // Row 5 (space)
     [
       {code:"ControlLeft", label:"Ctrl", wide:"wide"},
+      {code:"MetaLeft", label:"Win", wide:"wide"},
       {code:"AltLeft", label:"Alt", wide:"wide"},
       {code:"Space", label:"Space", wide:"space"},
       {code:"AltRight", label:"Alt", wide:"wide"},
+      {code:"MetaRight", label:"Win", wide:"wide"},
       {code:"ControlRight", label:"Ctrl", wide:"wide"},
     ]
   ];
+
+  const MAC_ROWS = [
+    // Row 1 (digits)
+    [
+      {code:"Backquote", label:"`"},
+      {code:"Digit1", label:"1"},
+      {code:"Digit2", label:"2"},
+      {code:"Digit3", label:"3"},
+      {code:"Digit4", label:"4"},
+      {code:"Digit5", label:"5"},
+      {code:"Digit6", label:"6"},
+      {code:"Digit7", label:"7"},
+      {code:"Digit8", label:"8"},
+      {code:"Digit9", label:"9"},
+      {code:"Digit0", label:"0"},
+      {code:"Minus", label:"-"},
+      {code:"Equal", label:"="},
+      {code:"Backspace", label:"Delete", wide:"wider"},
+    ],
+    // Row 2 (Q row)
+    [
+      {code:"Tab", label:"Tab", wide:"wide"},
+      {code:"KeyQ", label:"Q"},
+      {code:"KeyW", label:"W"},
+      {code:"KeyE", label:"E"},
+      {code:"KeyR", label:"R"},
+      {code:"KeyT", label:"T"},
+      {code:"KeyY", label:"Y"},
+      {code:"KeyU", label:"U"},
+      {code:"KeyI", label:"I"},
+      {code:"KeyO", label:"O"},
+      {code:"KeyP", label:"P"},
+      {code:"BracketLeft", label:"["},
+      {code:"BracketRight", label:"]"},
+      {code:"Backslash", label:"\\"},
+    ],
+    // Row 3 (A row)
+    [
+      {code:"CapsLock", label:"Caps", wide:"wider"},
+      {code:"KeyA", label:"A"},
+      {code:"KeyS", label:"S"},
+      {code:"KeyD", label:"D"},
+      {code:"KeyF", label:"F"},
+      {code:"KeyG", label:"G"},
+      {code:"KeyH", label:"H"},
+      {code:"KeyJ", label:"J"},
+      {code:"KeyK", label:"K"},
+      {code:"KeyL", label:"L"},
+      {code:"Semicolon", label:";"},
+      {code:"Quote", label:"'"},
+      {code:"Enter", label:"Return", wide:"wider"},
+    ],
+    // Row 4 (Z row)
+    [
+      {code:"ShiftLeft", label:"Shift", wide:"wider"},
+      {code:"KeyZ", label:"Z"},
+      {code:"KeyX", label:"X"},
+      {code:"KeyC", label:"C"},
+      {code:"KeyV", label:"V"},
+      {code:"KeyB", label:"B"},
+      {code:"KeyN", label:"N"},
+      {code:"KeyM", label:"M"},
+      {code:"Comma", label:","},
+      {code:"Period", label:"."},
+      {code:"Slash", label:"/"},
+      {code:"ShiftRight", label:"Shift", wide:"wider"},
+    ],
+    // Row 5 (space)
+    [
+      {code:"ControlLeft", label:"Control", wide:"wide"},
+      {code:"AltLeft", label:"Option", wide:"wide"},
+      {code:"MetaLeft", label:"Command", wide:"wide"},
+      {code:"Space", label:"Space", wide:"space"},
+      {code:"MetaRight", label:"Command", wide:"wide"},
+      {code:"AltRight", label:"Option", wide:"wide"},
+      {code:"ControlRight", label:"Control", wide:"wide"},
+    ]
+  ];
+
+  const NUMPAD_ROWS = [
+    [
+      {code:"NumLock", label:"Num"},
+      {code:"NumpadDivide", label:"/"},
+      {code:"NumpadMultiply", label:"*"},
+      {code:"NumpadSubtract", label:"-"},
+    ],
+    [
+      {code:"Numpad7", label:"7"},
+      {code:"Numpad8", label:"8"},
+      {code:"Numpad9", label:"9"},
+      {code:"NumpadAdd", label:"+", wide:"wide"},
+    ],
+    [
+      {code:"Numpad4", label:"4"},
+      {code:"Numpad5", label:"5"},
+      {code:"Numpad6", label:"6"},
+      {code:"NumpadAdd", label:"+", wide:"wide", hidden:true},
+    ],
+    [
+      {code:"Numpad1", label:"1"},
+      {code:"Numpad2", label:"2"},
+      {code:"Numpad3", label:"3"},
+      {code:"NumpadEnter", label:"Enter", wide:"wide"},
+    ],
+    [
+      {code:"Numpad0", label:"0", wide:"wide"},
+      {code:"NumpadDecimal", label:"."},
+      {code:"NumpadEnter", label:"Enter", wide:"wide", hidden:true},
+    ]
+  ];
+
+  const KEYBOARD_LAYOUTS = {
+    "windows": { label: "Windows", main: WINDOWS_ROWS },
+    "mac": { label: "Mac", main: MAC_ROWS },
+    "windows-numpad": { label: "Windows + numpad", main: WINDOWS_ROWS, numpad: NUMPAD_ROWS },
+    "mac-numpad": { label: "Mac + numpad", main: MAC_ROWS, numpad: NUMPAD_ROWS },
+  };
+
+  const FINGER_MAP = {
+    Backquote: "lp",
+    Digit1: "lp",
+    Digit2: "lr",
+    Digit3: "lm",
+    Digit4: "li",
+    Digit5: "li",
+    Digit6: "ri",
+    Digit7: "ri",
+    Digit8: "rm",
+    Digit9: "rr",
+    Digit0: "rp",
+    Minus: "rp",
+    Equal: "rp",
+    Backspace: "rp",
+    Tab: "lp",
+    KeyQ: "lp",
+    KeyW: "lr",
+    KeyE: "lm",
+    KeyR: "li",
+    KeyT: "li",
+    KeyY: "ri",
+    KeyU: "ri",
+    KeyI: "rm",
+    KeyO: "rr",
+    KeyP: "rp",
+    BracketLeft: "rp",
+    BracketRight: "rp",
+    Backslash: "rp",
+    CapsLock: "lp",
+    KeyA: "lp",
+    KeyS: "lr",
+    KeyD: "lm",
+    KeyF: "li",
+    KeyG: "li",
+    KeyH: "ri",
+    KeyJ: "ri",
+    KeyK: "rm",
+    KeyL: "rr",
+    Semicolon: "rp",
+    Quote: "rp",
+    Enter: "rp",
+    ShiftLeft: "lp",
+    KeyZ: "lp",
+    KeyX: "lr",
+    KeyC: "lm",
+    KeyV: "li",
+    KeyB: "li",
+    KeyN: "ri",
+    KeyM: "ri",
+    Comma: "rm",
+    Period: "rr",
+    Slash: "rp",
+    ShiftRight: "rp",
+    ControlLeft: "lp",
+    MetaLeft: "li",
+    AltLeft: "li",
+    Space: "th",
+    AltRight: "ri",
+    MetaRight: "ri",
+    ControlRight: "rp",
+    NumLock: "rp",
+    NumpadDivide: "rp",
+    NumpadMultiply: "rp",
+    NumpadSubtract: "rp",
+    NumpadAdd: "rp",
+    NumpadEnter: "rp",
+    Numpad7: "rr",
+    Numpad8: "rm",
+    Numpad9: "ri",
+    Numpad4: "rr",
+    Numpad5: "rm",
+    Numpad6: "ri",
+    Numpad1: "rr",
+    Numpad2: "rm",
+    Numpad3: "ri",
+    Numpad0: "th",
+    NumpadDecimal: "ri",
+  };
+
+  const HOME_KEYS = new Set(["KeyF", "KeyJ"]);
 
   // Default mappings (approximate) for Japanese IME Kana mode.
   // "jis" is based on the common JIS kana layout for letter keys + digits.
@@ -296,6 +497,8 @@
     layout: "jis",
     inputMode: "native",
     showKeyboard: true,
+    keyboardLayout: "windows",
+    showFingerGuide: true,
     typingTimerEnabled: true,
     wordList: "basic",
     wordSetId: "",
@@ -337,6 +540,8 @@
   // normalize older saved options
   if (!opts.inputMode || !["native", "mapped"].includes(opts.inputMode)) opts.inputMode = "native";
   if (typeof opts.showKeyboard !== "boolean") opts.showKeyboard = true;
+  if (!opts.keyboardLayout || !KEYBOARD_LAYOUTS[opts.keyboardLayout]) opts.keyboardLayout = "windows";
+  if (typeof opts.showFingerGuide !== "boolean") opts.showFingerGuide = true;
   if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
   if (!opts.wordList || !["basic", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
@@ -461,16 +666,19 @@
   }
 
   // ---- On-screen keyboard render ----
-  function buildKeyboard(el, targetCode=null) {
-    el.innerHTML = "";
-    for (const row of KEYBOARD_ROWS) {
+  function buildKeyboardRows(container, rows, targetCode) {
+    for (const row of rows) {
       const r = document.createElement("div");
       r.className = "krow";
       for (const key of row) {
+        if (key.hidden) continue;
         const k = document.createElement("div");
         k.className = "key";
         if (key.wide) k.classList.add(key.wide);
         k.dataset.code = key.code;
+        const finger = FINGER_MAP[key.code];
+        if (finger) k.dataset.finger = finger;
+        if (HOME_KEYS.has(key.code)) k.classList.add("home");
         if (targetCode && key.code === targetCode) k.classList.add("target");
         const top = document.createElement("div");
         top.className = "top";
@@ -478,11 +686,29 @@
         const kana = document.createElement("div");
         kana.className = "kana";
         kana.textContent = map[key.code] || "";
+        const fingerDot = document.createElement("div");
+        fingerDot.className = "fingerDot";
         k.appendChild(top);
         k.appendChild(kana);
+        k.appendChild(fingerDot);
         r.appendChild(k);
       }
-      el.appendChild(r);
+      container.appendChild(r);
+    }
+  }
+
+  function buildKeyboard(el, targetCode=null) {
+    el.innerHTML = "";
+    const layout = KEYBOARD_LAYOUTS[opts.keyboardLayout] || KEYBOARD_LAYOUTS["windows"];
+    const mainBlock = document.createElement("div");
+    mainBlock.className = "kbdBlock";
+    buildKeyboardRows(mainBlock, layout.main, targetCode);
+    el.appendChild(mainBlock);
+    if (layout.numpad) {
+      const padBlock = document.createElement("div");
+      padBlock.className = "kbdBlock kbdBlock--numpad";
+      buildKeyboardRows(padBlock, layout.numpad, targetCode);
+      el.appendChild(padBlock);
     }
   }
   function flashKey(code) {
@@ -497,6 +723,10 @@
     $$(".kbdWrap").forEach((wrap) => {
       wrap.classList.toggle("hidden", !opts.showKeyboard);
     });
+  }
+
+  function applyFingerGuideVisibility() {
+    document.body.classList.toggle("showFingerGuide", opts.showFingerGuide);
   }
 
   function renderPassage(el, target, progressIndex, wrongIndices = new Set(), correctIndices = new Set()) {
@@ -1671,6 +1901,8 @@
     $("#layoutSelect").value = opts.layout || "jis";
     $("#inputModeSelect").value = opts.inputMode || "mapped";
     $("#keyboardToggle").value = opts.showKeyboard ? "on" : "off";
+    $("#keyboardLayoutSelect").value = opts.keyboardLayout || "windows";
+    $("#fingerGuideToggle").value = opts.showFingerGuide ? "on" : "off";
     $("#typingTimerToggle").value = opts.typingTimerEnabled ? "on" : "off";
     $("#tTimer").disabled = !opts.typingTimerEnabled;
     syncBackgroundVideoUI();
@@ -1680,6 +1912,7 @@
     // keyboard preview
     buildKeyboard($("#keyboard"), null);
     applyKeyboardVisibility();
+    applyFingerGuideVisibility();
   }
 
   $("#layoutSelect").addEventListener("change", (e) => {
@@ -1703,6 +1936,21 @@
     opts.showKeyboard = e.target.value === "on";
     saveJSON(STORAGE.opts, opts);
     applyKeyboardVisibility();
+  });
+
+  $("#keyboardLayoutSelect").addEventListener("change", (e) => {
+    opts.keyboardLayout = e.target.value;
+    saveJSON(STORAGE.opts, opts);
+    buildKeyboard($("#keyboard"), null);
+    buildKeyboard($("#keyboard2"), nextNeededCode());
+    buildKeyboard($("#keyboardWord"), codeForKanaChar(nextChar(wordTarget, wordTyped)));
+    buildKeyboard($("#keyboardSentence"), codeForKanaChar(nextChar(sentenceTarget, sentenceTyped)));
+  });
+
+  $("#fingerGuideToggle").addEventListener("change", (e) => {
+    opts.showFingerGuide = e.target.value === "on";
+    saveJSON(STORAGE.opts, opts);
+    applyFingerGuideVisibility();
   });
 
   $("#typingTimerToggle").addEventListener("change", (e) => {
@@ -1735,9 +1983,9 @@
 
   function renderMapTable() {
     const codes = [];
-    for (const row of KEYBOARD_ROWS) {
+    for (const row of WINDOWS_ROWS) {
       for (const k of row) {
-        if (k.code && !["Space","Enter","Backspace","Tab","CapsLock","ShiftLeft","ShiftRight","ControlLeft","ControlRight","AltLeft","AltRight"].includes(k.code)) {
+        if (k.code && !["Space","Enter","Backspace","Tab","CapsLock","ShiftLeft","ShiftRight","ControlLeft","ControlRight","AltLeft","AltRight","MetaLeft","MetaRight"].includes(k.code)) {
           codes.push(k.code);
         }
       }
@@ -1903,6 +2151,7 @@
   buildKeyboard($("#keyboard"), null);
   buildKeyboard($("#keyboard2"), null);
   applyKeyboardVisibility();
+  applyFingerGuideVisibility();
   $("#tTimer").disabled = !opts.typingTimerEnabled;
   syncBackgroundVideoUI();
   renderBackgroundVideo();
