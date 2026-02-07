@@ -84,6 +84,21 @@
           </div>
           <button class="btn smallBtn" data-nav="settings">Edit map</button>
         </div>
+        <div class="kbdLegend" data-finger-guide>
+          <div class="kbdLegendTitle">Finger guide</div>
+          <div class="kbdLegendItems">
+            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+          </div>
+          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
+        </div>
         <div id="keyboard" class="keyboard" aria-label="Keyboard"></div>
       </div>
 
@@ -122,6 +137,13 @@
             <input id="tLen" type="number" min="10" max="300" value="60" />
           </label>
           <label class="field">
+            <span>Run timer</span>
+            <select id="typingTimerToggle">
+              <option value="on">Enabled</option>
+              <option value="off">Disabled</option>
+            </select>
+          </label>
+          <label class="field">
             <span>Timer (sec)</span>
             <input id="tTimer" type="number" min="10" max="600" value="60" />
           </label>
@@ -134,6 +156,21 @@
             <div class="kbdTitle">On-screen keyboard</div>
             <div class="small muted">Highlights the next key you need.</div>
           </div>
+        </div>
+        <div class="kbdLegend" data-finger-guide>
+          <div class="kbdLegendTitle">Finger guide</div>
+          <div class="kbdLegendItems">
+            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+          </div>
+          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
         </div>
         <div id="keyboard2" class="keyboard" aria-label="Keyboard"></div>
       </div>
@@ -213,6 +250,21 @@
           </div>
           <button class="btn smallBtn" data-nav="settings">Edit map</button>
         </div>
+        <div class="kbdLegend" data-finger-guide>
+          <div class="kbdLegendTitle">Finger guide</div>
+          <div class="kbdLegendItems">
+            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+          </div>
+          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
+        </div>
         <div id="keyboardWord" class="keyboard" aria-label="Keyboard"></div>
       </div>
     </section>
@@ -258,6 +310,21 @@
             <div class="small muted">Highlights the next key you need.</div>
           </div>
           <button class="btn smallBtn" data-nav="settings">Edit map</button>
+        </div>
+        <div class="kbdLegend" data-finger-guide>
+          <div class="kbdLegendTitle">Finger guide</div>
+          <div class="kbdLegendItems">
+            <span class="legendItem finger-lp"><span class="legendDot"></span>Left pinky</span>
+            <span class="legendItem finger-lr"><span class="legendDot"></span>Left ring</span>
+            <span class="legendItem finger-lm"><span class="legendDot"></span>Left middle</span>
+            <span class="legendItem finger-li"><span class="legendDot"></span>Left index</span>
+            <span class="legendItem finger-ri"><span class="legendDot"></span>Right index</span>
+            <span class="legendItem finger-rm"><span class="legendDot"></span>Right middle</span>
+            <span class="legendItem finger-rr"><span class="legendDot"></span>Right ring</span>
+            <span class="legendItem finger-rp"><span class="legendDot"></span>Right pinky</span>
+            <span class="legendItem finger-th"><span class="legendDot"></span>Thumbs</span>
+          </div>
+          <div class="small muted">Home row: rest fingers on A S D F + J K L ; (bumps on F/J).</div>
         </div>
         <div id="keyboardSentence" class="keyboard" aria-label="Keyboard"></div>
       </div>
@@ -322,20 +389,30 @@
         </label>
 
         <label class="field">
-          <span>Typing timer</span>
-          <select id="typingTimerToggle">
-            <option value="on">Enabled</option>
-            <option value="off">Disabled</option>
-          </select>
-        </label>
-
-        <label class="field">
           <span>Background Video</span>
           <select id="backgroundVideoSelect">
             <option value="off">Off</option>
             <option value="on">On</option>
           </select>
           <span class="small muted" id="backgroundVideoNote">Sakura video backdrop behind the UI.</span>
+        </label>
+
+        <label class="field">
+          <span>Keyboard style</span>
+          <select id="keyboardLayoutSelect">
+            <option value="windows">Windows (main)</option>
+            <option value="mac">Mac (main)</option>
+            <option value="windows-numpad">Windows + number pad</option>
+            <option value="mac-numpad">Mac + number pad</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Finger guide</span>
+          <select id="fingerGuideToggle">
+            <option value="on">Show</option>
+            <option value="off">Hide</option>
+          </select>
         </label>
       </div>
 
