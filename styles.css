@@ -388,6 +388,8 @@ code{color: var(--accent)}
   display:flex;
   flex-direction:row;
   flex-wrap:wrap;
+  justify-content:center;
+  align-content:flex-start;
   gap:16px;
   padding:10px;
   border-radius:var(--radius);
