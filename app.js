@@ -429,8 +429,363 @@
       "あかるい","くらい","あまい","からい","しおからい","すっぱい","にがい",
       "うれしい","かなしい","きれい","しずか","にぎやか","やさしい","こわい",
       "おもしろい","つかれる","げんき"
+    ],
+    classVocab: [
+      { display: "日", reading: "ひ", meaning: "day" },
+      { display: "ひと", reading: "ひと", meaning: "person" },
+      { display: "いぬ", reading: "いぬ", meaning: "dog" },
+      { display: "ねこ", reading: "ねこ", meaning: "cat" },
+      { display: "あなた", reading: "あなた", meaning: "you" },
+      { display: "まち", reading: "まち", meaning: "town; city" },
+      { display: "レストラン", reading: "レストラン", meaning: "restaurant" },
+      { display: "ひとりで", reading: "ひとりで", meaning: "alone" },
+      { display: "ある", reading: "ある", meaning: "there is ... (place に thing が)" },
+      { display: "いる", reading: "いる", meaning: "(a person) is in ...; stays at ... (place に person が)" },
+      { display: "アルバイト", reading: "アルバイト", meaning: "part-time job (more colloquially バイト)" },
+      { display: "クラス", reading: "クラス", meaning: "class" },
+      { display: "サークル", reading: "サークル", meaning: "club activity" },
+      { display: "パーティー", reading: "パーティー", meaning: "party" },
+      { display: "テスト", reading: "テスト", meaning: "test" },
+      { display: "月曜日", reading: "げつようび", meaning: "Monday" },
+      { display: "火曜日", reading: "かようび", meaning: "Tuesday" },
+      { display: "水曜日", reading: "すいようび", meaning: "Wednesday" },
+      { display: "木曜日", reading: "もくようび", meaning: "Thursday" },
+      { display: "金曜日", reading: "きんようび", meaning: "Friday" },
+      { display: "こうえん", reading: "こうえん", meaning: "park" },
+      { display: "スーパー", reading: "スーパー", meaning: "supermarket" },
+      { display: "バスてい", reading: "バスてい", meaning: "bus stop" },
+      { display: "びょういん", reading: "びょういん", meaning: "hospital" },
+      { display: "ホテル", reading: "ホテル", meaning: "hotel" },
+      { display: "ほんや", reading: "ほんや", meaning: "bookstore" },
+      { display: "みぎ", reading: "みぎ", meaning: "right; to the right of (~の)" },
+      { display: "ひだり", reading: "ひだり", meaning: "left; to the left of (~の)" },
+      { display: "まえ", reading: "まえ", meaning: "front; in front of (~の)" },
+      { display: "うしろ", reading: "うしろ", meaning: "back; behind (~の)" },
+      { display: "なか", reading: "なか", meaning: "inside; in (~の)" },
+      { display: "ちかく", reading: "ちかく", meaning: "near; nearby; near to (~の)" },
+      { display: "となり", reading: "となり", meaning: "next; next to (~の)" },
+      { display: "あいだ", reading: "あいだ", meaning: "between (A と B の)" },
+      { display: "むかい", reading: "むかい", meaning: "across from" },
+      { display: "ついたち", reading: "ついたち", meaning: "1st" },
+      { display: "ふつか", reading: "ふつか", meaning: "2nd" },
+      { display: "みっか", reading: "みっか", meaning: "3rd" },
+      { display: "よっか", reading: "よっか", meaning: "4th" },
+      { display: "いつか", reading: "いつか", meaning: "5th" },
+      { display: "むいか", reading: "むいか", meaning: "6th" },
+      { display: "なのか", reading: "なのか", meaning: "7th" },
+      { display: "ようか", reading: "ようか", meaning: "8th" },
+      { display: "ここのか", reading: "ここのか", meaning: "9th" },
+      { display: "とおか", reading: "とおか", meaning: "10th" },
+      { display: "じゅういちにち", reading: "じゅういちにち", meaning: "11th" },
+      { display: "じゅうににち", reading: "じゅうににち", meaning: "12th" },
+      { display: "じゅうさんにち", reading: "じゅうさんにち", meaning: "13th" },
+      { display: "じゅうよっか", reading: "じゅうよっか", meaning: "14th" },
+      { display: "じゅうごにち", reading: "じゅうごにち", meaning: "15th" },
+      { display: "じゅうろくにち", reading: "じゅうろくにち", meaning: "16th" },
+      { display: "じゅうしちにち", reading: "じゅうしちにち", meaning: "17th" },
+      { display: "じゅうはちにち", reading: "じゅうはちにち", meaning: "18th" },
+      { display: "じゅうくにち", reading: "じゅうくにち", meaning: "19th" },
+      { display: "はつか", reading: "はつか", meaning: "20th" },
+      { display: "にじゅういちにち", reading: "にじゅういちにち", meaning: "21st" },
+      { display: "にじゅうににち", reading: "にじゅうににち", meaning: "22nd" },
+      { display: "にじゅうさんにち", reading: "にじゅうさんにち", meaning: "23rd" },
+      { display: "にじゅうよっか", reading: "にじゅうよっか", meaning: "24th" },
+      { display: "にじゅうごにち", reading: "にじゅうごにち", meaning: "25th" },
+      { display: "にじゅうろくにち", reading: "にじゅうろくにち", meaning: "26th" },
+      { display: "にじゅうしちにち", reading: "にじゅうしちにち", meaning: "27th" },
+      { display: "にじゅうはちにち", reading: "にじゅうはちにち", meaning: "28th" },
+      { display: "にじゅうくにち", reading: "にじゅうくにち", meaning: "29th" },
+      { display: "さんじゅうにち", reading: "さんじゅうにち", meaning: "30th" },
+      { display: "さんじゅういちにち", reading: "さんじゅういちにち", meaning: "31st" },
+      { display: "イス", reading: "イス", meaning: "chair" },
+      { display: "つくえ", reading: "つくえ", meaning: "desk" },
+      { display: "はな", reading: "はな", meaning: "flower" },
+      { display: "上", reading: "うえ", meaning: "up; above; on (~の)" },
+      { display: "下", reading: "した", meaning: "down; below; under (~の)" },
+      { display: "こども", reading: "こども", meaning: "child" },
+      { display: "きのう", reading: "きのう", meaning: "yesterday" },
+      { display: "かいもの", reading: "かいもの", meaning: "shopping" },
+      { display: "れぽーと", reading: "れぽーと", meaning: "paper; report" },
+      { display: "おてら", reading: "おてら", meaning: "temple" },
+      { display: "～と", reading: "～と", meaning: "together with ~; and" },
+      { display: "せんしゅう", reading: "せんしゅう", meaning: "last week" },
+      { display: "こんしゅう", reading: "こんしゅう", meaning: "this week" },
+      { display: "らいしゅう", reading: "らいしゅう", meaning: "next week" },
+      { display: "あう", reading: "あう", meaning: "to meet (a person)" },
+      { display: "かく", reading: "かく", meaning: "to write" },
+      { display: "まつ", reading: "まつ", meaning: "to wait" },
+      { display: "わかる", reading: "わかる", meaning: "to understand" },
+      { display: "しゃしん", reading: "しゃしん", meaning: "photo; picture" },
+      { display: "とき", reading: "とき", meaning: "when (time)" },
+      { display: "こどものとき", reading: "こどものとき", meaning: "when I was a kid" },
+      { display: "こうこうのとき", reading: "こうこうのとき", meaning: "when I was in high school" },
+      { display: "それから", reading: "それから", meaning: "and then; after that" },
+      { display: "だから", reading: "だから", meaning: "so; therefore" },
+      { display: "かう", reading: "かう", meaning: "to buy" },
+      { display: "とる", reading: "とる", meaning: "to take (a photo)" },
+      { display: "ごご", reading: "ごご", meaning: "P.M." },
+      { display: "…さん", reading: "…さん", meaning: "Mr./Ms..." },
+      { display: "はい", reading: "はい", meaning: "yes" },
+      { display: "おはようございます", reading: "おはようございます", meaning: "Good morning." },
+      { display: "こんにちは", reading: "こんにちは", meaning: "Good afternoon." },
+      { display: "こんばんは", reading: "こんばんは", meaning: "Good evening." },
+      { display: "おやすみなさい", reading: "おやすみなさい", meaning: "Good night." },
+      { display: "ありがとうございます", reading: "ありがとうございます", meaning: "Thank you." },
+      { display: "どうぞ", reading: "どうぞ", meaning: "Please (offering); Here you are" },
+      { display: "じゃあまた", reading: "じゃあまた", meaning: "Good-bye; See you again" },
+      { display: "しつれいします", reading: "しつれいします", meaning: "Excuse me; Good-bye" },
+      { display: "はじめまして", reading: "はじめまして", meaning: "How do you do?" },
+      { display: "(わたしわ)…です.", reading: "(わたしわ)…です.", meaning: "I am ~." },
+      { display: "よろしくおねがいします", reading: "よろしくおねがいします", meaning: "Nice to meet you." },
+      { display: "いただきます", reading: "いただきます", meaning: "Thank you for the meal. (before eating)" },
+      { display: "ごちそうさま", reading: "ごちそうさま", meaning: "Thank you for the meal. (after eating)" },
+      { display: "いってきます", reading: "いってきます", meaning: "I'll go and come back." },
+      { display: "いってらっしゃい", reading: "いってらっしゃい", meaning: "Please go and come back." },
+      { display: "ただいま", reading: "ただいま", meaning: "I'm home." },
+      { display: "おかえりなさい", reading: "おかえりなさい", meaning: "Welcome home." },
+      { display: "いち", reading: "いち", meaning: "one" },
+      { display: "に", reading: "に", meaning: "two" },
+      { display: "さん", reading: "さん", meaning: "three" },
+      { display: "よん", reading: "よん", meaning: "four" },
+      { display: "ご", reading: "ご", meaning: "five" },
+      { display: "ろく", reading: "ろく", meaning: "six" },
+      { display: "なな", reading: "なな", meaning: "seven" },
+      { display: "はち", reading: "はち", meaning: "eight" },
+      { display: "きゅう", reading: "きゅう", meaning: "nine" },
+      { display: "じゅう", reading: "じゅう", meaning: "ten" },
+      { display: "でんわ", reading: "でんわ", meaning: "telephone" },
+      { display: "ばんごう", reading: "ばんごう", meaning: "number" },
+      { display: "なん/なに", reading: "なん/なに", meaning: "what" },
+      { display: "…ばん", reading: "…ばん", meaning: "number…" },
+      { display: "すみません", reading: "すみません", meaning: "Excuse me; I'm sorry." },
+      { display: "いいえ", reading: "いいえ", meaning: "no" },
+      { display: "いま", reading: "いま", meaning: "now" },
+      { display: "…じ", reading: "…じ", meaning: "o'clock" },
+      { display: "よじ", reading: "よじ", meaning: "four o'clock" },
+      { display: "しちじ", reading: "しちじ", meaning: "seven o'clock" },
+      { display: "くじ", reading: "くじ", meaning: "nine o'clock" },
+      { display: "はん", reading: "はん", meaning: "half" },
+      { display: "ごぜん", reading: "ごぜん", meaning: "A.M." },
+      { display: "ごふん", reading: "ごふん", meaning: "five minutes" },
+      { display: "じゅっぷん", reading: "じゅっぷん", meaning: "ten minutes" },
+      { display: "とうきょう", reading: "とうきょう", meaning: "Tokyo" },
+      { display: "…ね?", reading: "…ね?", meaning: "..., right?" },
+      { display: "そうです", reading: "そうです", meaning: "That's right" },
+      { display: "おねがいします", reading: "おねがいします", meaning: "Please (requesting)" },
+      { display: "…さい", reading: "…さい", meaning: "...years old" },
+      { display: "…じん", reading: "…じん", meaning: "...people" },
+      { display: "…ご", reading: "…ご", meaning: "... language" },
+      { display: "えいご", reading: "えいご", meaning: "English language" },
+      { display: "あめりか", reading: "あめりか", meaning: "U.S.A." },
+      { display: "いぎりす", reading: "いぎりす", meaning: "England; Great Britain" },
+      { display: "かんこく", reading: "かんこく", meaning: "South Korea" },
+      { display: "ちゅうごく", reading: "ちゅうごく", meaning: "China" },
+      { display: "…ねんせい", reading: "…ねんせい", meaning: "...year student" },
+      { display: "だいがくせい", reading: "だいがくせい", meaning: "college student" },
+      { display: "せんせい", reading: "せんせい", meaning: "teacher; professor" },
+      { display: "かいしゃいん", reading: "かいしゃいん", meaning: "office worker" },
+      { display: "こうこうせい", reading: "こうこうせい", meaning: "high school student" },
+      { display: "そうですか", reading: "そうですか", meaning: "I see.; Is that so?" },
+      { display: "がくせい", reading: "がくせい", meaning: "student" },
+      { display: "せんこう", reading: "せんこう", meaning: "major" },
+      { display: "ともだち", reading: "ともだち", meaning: "friend" },
+      { display: "なまえ", reading: "なまえ", meaning: "name" },
+      { display: "しごと", reading: "しごと", meaning: "job; work; occupation" },
+      { display: "りゅうがくせい", reading: "りゅうがくせい", meaning: "international student" },
+      { display: "あのう", reading: "あのう", meaning: "um…" },
+      { display: "じいんず", reading: "じいんず", meaning: "jeans" },
+      { display: "すまほ", reading: "すまほ", meaning: "smartphone; mobile" },
+      { display: "ちいしゃつ", reading: "ちいしゃつ", meaning: "T-shirt" },
+      { display: "のうと", reading: "のうと", meaning: "notebook" },
+      { display: "ぺん", reading: "ぺん", meaning: "pen" },
+      { display: "いくら", reading: "いくら", meaning: "how much" },
+      { display: "～えん", reading: "～えん", meaning: "...yen" },
+      { display: "ひゃく", reading: "ひゃく", meaning: "100" },
+      { display: "さんびゃく", reading: "さんびゃく", meaning: "300" },
+      { display: "ろっぴゃく", reading: "ろっぴゃく", meaning: "600" },
+      { display: "はっぴゃく", reading: "はっぴゃく", meaning: "800" },
+      { display: "せん", reading: "せん", meaning: "1000" },
+      { display: "さんぜん", reading: "さんぜん", meaning: "3000" },
+      { display: "はっせん", reading: "はっせん", meaning: "8000" },
+      { display: "いちまん", reading: "いちまん", meaning: "10000" },
+      { display: "これ", reading: "これ", meaning: "this one" },
+      { display: "それ", reading: "それ", meaning: "that one" },
+      { display: "あれ", reading: "あれ", meaning: "that one (over there)" },
+      { display: "どれ", reading: "どれ", meaning: "which one" },
+      { display: "こんびに", reading: "こんびに", meaning: "convenience store" },
+      { display: "だれ", reading: "だれ", meaning: "who" },
+      { display: "だれの", reading: "だれの", meaning: "whose" },
+      { display: "この", reading: "この", meaning: "this …" },
+      { display: "その", reading: "その", meaning: "that …" },
+      { display: "あの", reading: "あの", meaning: "that … (over there)" },
+      { display: "どの", reading: "どの", meaning: "which …" },
+      { display: "いらっしゃいませ", reading: "いらっしゃいませ", meaning: "Welcome (to our store)" },
+      { display: "(…お)おねがいします", reading: "(…お)おねがいします", meaning: "..., please." },
+      { display: "(…お)ください", reading: "(…お)ください", meaning: "Please give me …." },
+      { display: "じゃあ", reading: "じゃあ", meaning: "then…; if that's the case, …" },
+      { display: "どうも", reading: "どうも", meaning: "Thank you." },
+      { display: "おかあさん", reading: "おかあさん", meaning: "mother" },
+      { display: "おとうさん", reading: "おとうさん", meaning: "father" },
+      { display: "けいざい", reading: "けいざい", meaning: "economics" },
+      { display: "こんぴゅうたあ", reading: "こんぴゅうたあ", meaning: "computer" },
+      { display: "びじねす", reading: "びじねす", meaning: "business" },
+      { display: "れきし", reading: "れきし", meaning: "history" },
+      { display: "ここ", reading: "ここ", meaning: "here" },
+      { display: "そこ", reading: "そこ", meaning: "there" },
+      { display: "あそこ", reading: "あそこ", meaning: "over there" },
+      { display: "といれ", reading: "といれ", meaning: "toilet; restroom" },
+      { display: "おてあらい", reading: "おてあらい", meaning: "restroom" },
+      { display: "おいしい", reading: "おいしい", meaning: "delicious; tasty" },
+      { display: "たかい", reading: "たかい", meaning: "expensive" },
+      { display: "さかな", reading: "さかな", meaning: "fish" },
+      { display: "とんかつ", reading: "とんかつ", meaning: "pork cutlet" },
+      { display: "にく", reading: "にく", meaning: "meat" },
+      { display: "めにゅう", reading: "めにゅう", meaning: "menu" },
+      { display: "(のうん)と(のうん)", reading: "(のうん)と(のうん)", meaning: ".... and ...." },
+      { display: "にほんごで", reading: "にほんごで", meaning: "in Japanese" },
+      { display: "おんがく", reading: "おんがく", meaning: "music" },
+      { display: "ざっし", reading: "ざっし", meaning: "magazine" },
+      { display: "スポーツ", reading: "スポーツ", meaning: "sports" },
+      { display: "テニス", reading: "テニス", meaning: "tennis" },
+      { display: "テレビ", reading: "テレビ", meaning: "TV" },
+      { display: "ハンバーガー", reading: "ハンバーガー", meaning: "hamburger" },
+      { display: "おさけ", reading: "おさけ", meaning: "sake; alcoholic drink" },
+      { display: "おちゃ", reading: "おちゃ", meaning: "green tea" },
+      { display: "コーヒー", reading: "コーヒー", meaning: "coffee" },
+      { display: "みず", reading: "みず", meaning: "water" },
+      { display: "する", reading: "する", meaning: "to do" },
+      { display: "デート", reading: "デート", meaning: "date (romantic)" },
+      { display: "ええ", reading: "ええ", meaning: "yes" },
+      { display: "えいが", reading: "えいが", meaning: "movie" },
+      { display: "アイスクリーム", reading: "アイスクリーム", meaning: "ice cream" },
+      { display: "くる", reading: "くる", meaning: "to come" },
+      { display: "あさごはん", reading: "あさごはん", meaning: "breakfast" },
+      { display: "ひるごはん", reading: "ひるごはん", meaning: "lunch" },
+      { display: "ばんごはん", reading: "ばんごはん", meaning: "dinner" },
+      { display: "ごろ", reading: "ごろ", meaning: "at about" },
+      { display: "おきる", reading: "おきる", meaning: "to get up" },
+      { display: "ねる", reading: "ねる", meaning: "to sleep; to go to bed" },
+      { display: "あした", reading: "あした", meaning: "tomorrow" },
+      { display: "きょう", reading: "きょう", meaning: "today" },
+      { display: "あさ", reading: "あさ", meaning: "morning" },
+      { display: "ばん", reading: "ばん", meaning: "evening" },
+      { display: "こんばん", reading: "こんばん", meaning: "tonight" },
+      { display: "しゅうまつ", reading: "しゅうまつ", meaning: "weekend" },
+      { display: "いい", reading: "いい", meaning: "good" },
+      { display: "ちょっと", reading: "ちょっと", meaning: "a little" },
+      { display: "えいがかん", reading: "えいがかん", meaning: "movie theater" },
+      { display: "まいにち", reading: "まいにち", meaning: "every day" },
+      { display: "まいばん", reading: "まいばん", meaning: "every night" },
+      { display: "まいあさ", reading: "まいあさ", meaning: "every morning" },
+      { display: "あまり", reading: "あまり", meaning: "(not) much" },
+      { display: "ぜんぜん", reading: "ぜんぜん", meaning: "(not) at all" },
+      { display: "たいてい", reading: "たいてい", meaning: "usually" },
+      { display: "ときどき", reading: "ときどき", meaning: "sometimes" },
+      { display: "よく", reading: "よく", meaning: "often" },
+      { display: "そうですね", reading: "そうですね", meaning: "That's right.; Let me see." },
+      { display: "でも", reading: "でも", meaning: "but" },
+      { display: "どうですか", reading: "どうですか", meaning: "How about …? How is …?" },
+      { display: "はやい", reading: "はやい", meaning: "early" },
+      { display: "パーティーをする", reading: "パーティーをする", meaning: "to throw a party" },
+      { display: "いつ", reading: "いつ", meaning: "when" },
+      { display: "うち", reading: "うち", meaning: "home, house" },
+      { display: "えんぴつ", reading: "えんぴつ", meaning: "pencil" },
+      { display: "がっこう", reading: "がっこう", meaning: "school" },
+      { display: "きょうしつ", reading: "きょうしつ", meaning: "classroom" },
+      { display: "ぎんこう", reading: "ぎんこう", meaning: "bank" },
+      { display: "くるま", reading: "くるま", meaning: "car" },
+      { display: "じゃありません", reading: "じゃありません", meaning: "is not; are not" },
+      { display: "じゃありませんでした", reading: "じゃありませんでした", meaning: "was not; were not" },
+      { display: "だいがく", reading: "だいがく", meaning: "university" },
+      { display: "でした", reading: "でした", meaning: "was, were" },
+      { display: "どこ", reading: "どこ", meaning: "where" },
+      { display: "としょかん", reading: "としょかん", meaning: "library" },
+      { display: "なんじ", reading: "なんじ", meaning: "what time" },
+      { display: "へや", reading: "へや", meaning: "room" },
+      { display: "ほん", reading: "ほん", meaning: "book" },
+      { display: "カフェ", reading: "カフェ", meaning: "cafe" },
+      { display: "こうこう", reading: "こうこう", meaning: "high school" },
+      { display: "コンビニ", reading: "コンビニ", meaning: "convenience store" },
+      { display: "ゆうびんきょく", reading: "ゆうびんきょく", meaning: "post office" },
+      { display: "いちがつ", reading: "いちがつ", meaning: "January" },
+      { display: "くがつ", reading: "くがつ", meaning: "September" },
+      { display: "ごがつ", reading: "ごがつ", meaning: "May" },
+      { display: "さんがつ", reading: "さんがつ", meaning: "March" },
+      { display: "しちがつ", reading: "しちがつ", meaning: "July" },
+      { display: "じゅういちがつ", reading: "じゅういちがつ", meaning: "November" },
+      { display: "じゅうがつ", reading: "じゅうがつ", meaning: "October" },
+      { display: "じゅうにがつ", reading: "じゅうにがつ", meaning: "December" },
+      { display: "しゅう", reading: "しゅう", meaning: "week" },
+      { display: "つき", reading: "つき", meaning: "month" },
+      { display: "とし", reading: "とし", meaning: "year" },
+      { display: "どようび", reading: "どようび", meaning: "Saturday" },
+      { display: "にがつ", reading: "にがつ", meaning: "February" },
+      { display: "にちようび", reading: "にちようび", meaning: "Sunday" },
+      { display: "はちがつ", reading: "はちがつ", meaning: "August" },
+      { display: "よんがつ", reading: "よんがつ", meaning: "April" },
+      { display: "ろくがつ", reading: "ろくがつ", meaning: "June" },
+      { display: "～ぐらい", reading: "～ぐらい", meaning: "about; approximately" },
+      { display: "～じかん", reading: "～じかん", meaning: "... hours" },
+      { display: "いちじかん", reading: "いちじかん", meaning: "one hour" },
+      { display: "かう", reading: "かう", meaning: "to buy (～を)" },
+      { display: "ゲーム", reading: "ゲーム", meaning: "game" },
+      { display: "ごはん", reading: "ごはん", meaning: "rice; meal" },
+      { display: "ごめんなさい", reading: "ごめんなさい", meaning: "I'm sorry." },
+      { display: "しゃしん", reading: "しゃしん", meaning: "picture; photograph" },
+      { display: "それから", reading: "それから", meaning: "and then; after that" },
+      { display: "だから", reading: "だから", meaning: "so; therefore" },
+      { display: "たくさん", reading: "たくさん", meaning: "many; a lot" },
+      { display: "どうして", reading: "どうして", meaning: "why" },
+      { display: "とき", reading: "とき", meaning: "when ...; at the time of ... (～の)" },
+      { display: "とる", reading: "とる", meaning: "to take (a picture) (～を)" },
+      { display: "パン", reading: "パン", meaning: "bread" },
+      { display: "もしもし", reading: "もしもし", meaning: "Hello? (used on the phone)" },
+      { display: "わたし", reading: "わたし", meaning: "I" },
+      { display: "にほん", reading: "にほん", meaning: "Japan" },
+      { display: "かさ", reading: "かさ", meaning: "umbrella" },
+      { display: "かばん", reading: "かばん", meaning: "bag" },
+      { display: "くつ", reading: "くつ", meaning: "shoes" },
+      { display: "さいふ", reading: "さいふ", meaning: "wallet" },
+      { display: "じてんしゃ", reading: "じてんしゃ", meaning: "bicycle" },
+      { display: "しんぶん", reading: "しんぶん", meaning: "newspaper" },
+      { display: "とけい", reading: "とけい", meaning: "watch; clock" },
+      { display: "ぼうし", reading: "ぼうし", meaning: "hat; cap" },
+      { display: "やさい", reading: "やさい", meaning: "vegetable" },
+      { display: "きく", reading: "きく", meaning: "to listen; to hear" },
+      { display: "のむ", reading: "のむ", meaning: "to drink" },
+      { display: "はなす", reading: "はなす", meaning: "to speak; to talk" },
+      { display: "よむ", reading: "よむ", meaning: "to read" },
+      { display: "たべる", reading: "たべる", meaning: "to eat" },
+      { display: "みる", reading: "みる", meaning: "to see; to look at; to watch" },
+      { display: "べんきょうする", reading: "べんきょうする", meaning: "to study" },
+      { display: "いく", reading: "いく", meaning: "to go" },
+      { display: "かえる", reading: "かえる", meaning: "to go back; to return" }
     ]
   };
+
+  function normalizeWordEntry(entry) {
+    if (typeof entry === "string") {
+      const text = entry.trim();
+      if (!text) return null;
+      return { display: text, reading: text, meaning: "" };
+    }
+    if (!entry || typeof entry !== "object") return null;
+    const display = typeof entry.display === "string" ? entry.display.trim() : "";
+    const reading = typeof entry.reading === "string" ? entry.reading.trim() : "";
+    const meaning = typeof entry.meaning === "string" ? entry.meaning.trim() : "";
+    const fallback = display || reading;
+    if (!fallback) return null;
+    return {
+      display: display || fallback,
+      reading: reading || fallback,
+      meaning
+    };
+  }
+
+  function normalizeWordEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    return entries.map(normalizeWordEntry).filter(Boolean);
+  }
 
   const SENTENCE_LISTS = {
     basic: [
@@ -543,7 +898,7 @@
   if (!opts.keyboardLayout || !KEYBOARD_LAYOUTS[opts.keyboardLayout]) opts.keyboardLayout = "windows";
   if (typeof opts.showFingerGuide !== "boolean") opts.showFingerGuide = true;
   if (typeof opts.typingTimerEnabled !== "boolean") opts.typingTimerEnabled = true;
-  if (!opts.wordList || !["basic", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
+  if (!opts.wordList || !["basic", "classVocab", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
   if (!["on", "off"].includes(opts.backgroundVideo)) opts.backgroundVideo = "off";
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
@@ -1188,6 +1543,9 @@
   let wordPaused = false;
   let sentencePaused = false;
   let wordTarget = "", wordTyped = "";
+  let wordTargetDisplay = "";
+  let wordTargetMeaning = "";
+  let wordEntry = null;
   let wDone=0, wCorrect=0, wWrong=0;
   let wordWrongIndices = new Set();
   let wordCorrectIndices = new Set();
@@ -1205,6 +1563,18 @@
 
   function setWordUI() {
     renderPassage($("#wordTarget"), wordTarget, wordTyped.length, wordWrongIndices, wordCorrectIndices);
+    const displayEl = $("#wordDisplay");
+    if (displayEl) {
+      const showDisplay = wordTargetDisplay && wordTargetDisplay !== wordTarget;
+      displayEl.textContent = showDisplay ? wordTargetDisplay : "";
+      displayEl.classList.toggle("hidden", !showDisplay);
+    }
+    const meaningEl = $("#wordMeaning");
+    if (meaningEl) {
+      const showMeaning = !!wordTargetMeaning;
+      meaningEl.textContent = showMeaning ? `Meaning: ${wordTargetMeaning}` : "";
+      meaningEl.classList.toggle("hidden", !showMeaning);
+    }
     $("#wordTyped").textContent = wordTyped || "";
     const wordInputEl = $("#wordInput");
     if (wordInputEl.value !== wordInput) wordInputEl.value = wordInput;
@@ -1246,6 +1616,10 @@
     const hintEl = $("#wordHint");
     if (!hintEl) return;
     const list = $("#wordListSelect")?.value || opts.wordList || "basic";
+    if (list === "classVocab") {
+      hintEl.textContent = "Class Vocab shows the meaning (and kanji form, if available) beneath the target line.";
+      return;
+    }
     if (list !== "custom") {
       hintEl.textContent = wordHintDefault;
       return;
@@ -1275,21 +1649,30 @@
       wordTyped = "";
       wordWrongIndices = new Set();
       wordCorrectIndices = new Set();
+      wordEntry = { display: wordTarget, reading: wordTarget, meaning: "" };
+      wordTargetDisplay = wordTarget;
+      wordTargetMeaning = "";
     } else if (list === "custom") {
       const activeSet = getActiveWordSet();
-      const words = activeSet?.words || [];
-      candidates = words.filter(w => w.length <= maxLen);
+      const words = normalizeWordEntries(activeSet?.words || []);
+      candidates = words.filter(w => w.reading.length <= maxLen);
       if (!candidates.length && words.length) candidates = words;
-      if (!candidates.length) candidates = WORD_LISTS.basic.slice();
-      wordTarget = candidates[Math.floor(Math.random()*candidates.length)];
+      if (!candidates.length) candidates = normalizeWordEntries(WORD_LISTS.basic);
+      wordEntry = candidates[Math.floor(Math.random()*candidates.length)];
+      wordTarget = wordEntry.reading;
+      wordTargetDisplay = wordEntry.display;
+      wordTargetMeaning = wordEntry.meaning;
       wordTyped = "";
       wordWrongIndices = new Set();
       wordCorrectIndices = new Set();
     } else {
-      candidates = WORD_LISTS.basic.slice();
-      candidates = candidates.filter(w => w.length <= maxLen);
-      if (!candidates.length) candidates = WORD_LISTS.basic;
-      wordTarget = candidates[Math.floor(Math.random()*candidates.length)];
+      candidates = normalizeWordEntries(WORD_LISTS[list] || WORD_LISTS.basic);
+      candidates = candidates.filter(w => w.reading.length <= maxLen);
+      if (!candidates.length) candidates = normalizeWordEntries(WORD_LISTS[list] || WORD_LISTS.basic);
+      wordEntry = candidates[Math.floor(Math.random()*candidates.length)];
+      wordTarget = wordEntry.reading;
+      wordTargetDisplay = wordEntry.display;
+      wordTargetMeaning = wordEntry.meaning;
       wordTyped = "";
       wordWrongIndices = new Set();
       wordCorrectIndices = new Set();
@@ -1434,6 +1817,9 @@
     $("#btnWordPause").disabled = true;
     $("#btnWordStop").disabled = true;
     wordTarget = ""; wordTyped = "";
+    wordTargetDisplay = "";
+    wordTargetMeaning = "";
+    wordEntry = null;
     wordWrongIndices = new Set();
     wordCorrectIndices = new Set();
     wordInput = "";
@@ -1631,6 +2017,11 @@
       else if (inputEl.value !== wordInput) inputEl.value = wordInput;
       return;
     }
+    const shouldUseDisplay = wordEntry
+      && wordEntry.display
+      && wordEntry.display !== wordEntry.reading
+      && inputEl.value === wordEntry.display;
+    wordTarget = shouldUseDisplay ? wordEntry.display : wordEntry?.reading || wordTarget;
     let value = clampInputToTarget(inputEl.value, wordTarget);
     if (value !== inputEl.value) inputEl.value = value;
 
