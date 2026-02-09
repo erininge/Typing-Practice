@@ -522,6 +522,13 @@ code{color: var(--accent)}
   word-break: break-word;
   white-space: pre-wrap;
 }
+.wordMeta{
+  margin:6px 2px 0;
+  letter-spacing:.02em;
+}
+.wordMeta + .wordMeta{
+  margin-top:4px;
+}
 .typingLine.typed{
   margin-top:10px;
   color: var(--textSoft);
