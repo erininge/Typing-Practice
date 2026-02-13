@@ -222,7 +222,7 @@
           { code:"Power", label:"⏻", displayOnly:true },
         ],
         [
-          {code:"Backquote", label:"半角/全角"},
+          {code:"Backquote", label:"`"},
           {code:"Digit1", label:"1"},
           {code:"Digit2", label:"2"},
           {code:"Digit3", label:"3"},
@@ -234,8 +234,7 @@
           {code:"Digit9", label:"9"},
           {code:"Digit0", label:"0"},
           {code:"Minus", label:"-"},
-          {code:"Equal", label:"^"},
-          {code:"IntlYen", label:"¥"},
+          {code:"Equal", label:"="},
           {code:"Backspace", label:"delete", wide:"wide"},
         ],
         [
@@ -250,9 +249,9 @@
           {code:"KeyI", label:"I"},
           {code:"KeyO", label:"O"},
           {code:"KeyP", label:"P"},
-          {code:"BracketLeft", label:"@"},
-          {code:"BracketRight", label:"["},
-          {code:"Enter", label:"return", wide:"wider"},
+          {code:"BracketLeft", label:"["},
+          {code:"BracketRight", label:"]"},
+          {code:"Backslash", label:"\\"},
         ],
         [
           {code:"CapsLock", label:"caps lock", wide:"wider"},
@@ -266,8 +265,8 @@
           {code:"KeyK", label:"K"},
           {code:"KeyL", label:"L"},
           {code:"Semicolon", label:";"},
-          {code:"Quote", label:":"},
-          {code:"IntlBackslash", label:"]"},
+          {code:"Quote", label:"'"},
+          {code:"Enter", label:"return", wide:"wider"},
         ],
         [
           {code:"ShiftLeft", label:"shift", wide:"wider"},
@@ -281,10 +280,10 @@
           {code:"Comma", label:","},
           {code:"Period", label:"."},
           {code:"Slash", label:"/"},
-          {code:"IntlRo", label:"ろ"},
-          {code:"ShiftRight", label:"shift", wide:"wide"},
+          {code:"ShiftRight", label:"shift", wide:"wider"},
         ],
         [
+          {code:"Lang1", label:"🌐", displayOnly:true},
           {code:"Fn", label:"fn", displayOnly:true},
           {code:"ControlLeft", label:"control", wide:"wide"},
           {code:"AltLeft", label:"option", wide:"wide"},
@@ -292,9 +291,10 @@
           {code:"Space", label:"", wide:"space"},
           {code:"MetaRight", label:"command", wide:"wide"},
           {code:"AltRight", label:"option", wide:"wide"},
+          {code:"FnRight", label:"かな", displayOnly:true},
           {code:"ArrowLeft", label:"◀"},
-          {code:"ArrowDown", label:"▼"},
           {code:"ArrowUp", label:"▲"},
+          {code:"ArrowDown", label:"▼"},
           {code:"ArrowRight", label:"▶"},
         ]
       ]
@@ -391,7 +391,7 @@
   const DEFAULT_MAPS = {
     jis: {
       // Digits row (common)
-      Backquote: "ろ",
+      Backquote: "｀",
       Digit1: "ぬ",
       Digit2: "ふ",
       Digit3: "あ",
@@ -403,7 +403,7 @@
       Digit9: "よ",
       Digit0: "わ",
       Minus: "ほ",
-      Equal: "へ",
+      Equal: "゜",
       // Q row
       KeyQ: "た",
       KeyW: "て",
@@ -416,8 +416,8 @@
       KeyO: "ら",
       KeyP: "せ",
       BracketLeft: "゛",
-      BracketRight: "゜",
-      Backslash: "む",
+      BracketRight: "む",
+      Backslash: "へ",
       // A row
       KeyA: "ち",
       KeyS: "と",
