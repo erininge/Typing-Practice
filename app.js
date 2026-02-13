@@ -1228,6 +1228,19 @@
     }
   }
 
+  // ASCII punctuation that should not be required for progression.
+  // (Japanese punctuation such as 「」、。？！ etc. is still treated normally.)
+  const OPTIONAL_ASCII_PUNCTUATION = new Set([
+    ".", "?", "!", "-", "~", ":", ";", ",",
+    "'", '"', "`", "_", "(", ")", "[", "]", "{", "}",
+    "/", "\\", "|", "@", "#", "$", "%", "^", "&", "*",
+    "+", "=", "<", ">"
+  ]);
+
+  function isOptionalAsciiPunctuation(ch) {
+    return OPTIONAL_ASCII_PUNCTUATION.has(ch);
+  }
+
   function evaluateInput(target, input, allowSkipSpaces = false) {
     let ti = 0;
     const correctIndices = new Set();
@@ -1237,6 +1250,18 @@
 
     for (let ii = 0; ii < input.length && ti < target.length; ii += 1) {
       const inputChar = input[ii];
+
+      if (isOptionalAsciiPunctuation(inputChar)) {
+        inputToTarget[ii] = null;
+        inputStates[ii] = "ignored";
+        continue;
+      }
+
+      while (ti < target.length && isOptionalAsciiPunctuation(target[ti])) {
+        correctIndices.add(ti);
+        ti += 1;
+      }
+
       if (allowSkipSpaces) {
         while (ti < target.length && target[ti] === " " && inputChar !== " ") {
           correctIndices.add(ti);
@@ -1283,6 +1308,11 @@
         correctIndices.add(ti);
         ti += 1;
       }
+    }
+
+    while (ti < target.length && isOptionalAsciiPunctuation(target[ti])) {
+      correctIndices.add(ti);
+      ti += 1;
     }
 
     for (let ii = 0; ii < input.length; ii += 1) {
@@ -2053,10 +2083,13 @@
 
   function maxInputLengthForTarget(target) {
     let extra = 0;
+    let required = 0;
     for (const ch of target) {
+      if (isOptionalAsciiPunctuation(ch)) continue;
+      required += 1;
       if (decomposeVoiced(ch)) extra += 1;
     }
-    return target.length + extra;
+    return required + extra;
   }
 
   function clampInputToTarget(input, target) {

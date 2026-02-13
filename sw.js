@@ -1,5 +1,5 @@
 // Service Worker (GitHub Pages-safe, update-friendly)
-const VERSION = "v1.2.20";
+const VERSION = "v1.2.21";
 const CACHE_NAME = `typing-practice-${VERSION}`;
 const PRECACHE_URLS = [
   "./",
