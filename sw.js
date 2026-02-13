@@ -1,66 +1,76 @@
-// Offline cache with network-first updates for app shell files.
-const CACHE = "kana-keys-v1.2.17-1f2c4e7a9b";
-const ASSETS = [
+// Service Worker (GitHub Pages-safe, update-friendly)
+const VERSION = "v1.2.19";
+const CACHE_NAME = `typing-practice-${VERSION}`;
+const PRECACHE_URLS = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/Sakura.mp4",
-  "./sw.js"
+  "./manifest.json"
 ];
 
-const NETWORK_FIRST = new Set([
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/manifest.json",
-  "/sw.js"
-]);
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .catch(() => {})
+      .then(() => self.skipWaiting())
+  );
+});
 
-function isNetworkFirstRequest(request) {
-  if (request.method !== "GET") return false;
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return false;
-  return NETWORK_FIRST.has(url.pathname) || url.pathname === "/Typing-Practice/";
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((key) => (key === CACHE_NAME ? null : caches.delete(key))));
+    await self.clients.claim();
+  })());
+});
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      cache.put(request, response.clone()).catch(() => {});
+    }
+    return response;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    return cache.match("./index.html");
+  }
 }
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
-});
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  if (cached) return cached;
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => k === CACHE ? null : caches.delete(k)))).then(() => self.clients.claim())
-  );
-});
+  const response = await fetch(request);
+  if (response && response.ok && request.method === "GET") {
+    cache.put(request, response.clone()).catch(() => {});
+  }
+  return response;
+}
 
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  if (isNetworkFirstRequest(req)) {
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
-          }
-          return res;
-        })
-        .catch(() => caches.match(req).then((hit) => hit || caches.match("./index.html")))
-    );
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(networkFirst(request));
     return;
   }
-  e.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(cache => cache.put(req, copy)).catch(()=>{});
-      return res;
-    }).catch(()=>caches.match("./index.html")))
+
+  event.respondWith(
+    cacheFirst(request).catch(async () => {
+      const cache = await caches.open(CACHE_NAME);
+      return cache.match(request);
+    })
   );
 });
+
+/*
+Deploy checklist:
+1) Bump VERSION on each deploy (or auto-bump from your build/CI commit SHA).
+2) Hard-reset stuck SW: DevTools -> Application -> Service Workers -> Unregister,
+   then Clear storage/site data and reload.
+*/
