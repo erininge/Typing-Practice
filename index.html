@@ -285,6 +285,7 @@
 
       <div class="typingPanel">
         <div class="typingLine" id="sentenceTarget">—</div>
+        <div class="small muted wordMeta hidden" id="sentenceMeaning"></div>
         <div class="typingLine typed inputDisplay" id="sentenceTyped"></div>
         <input class="typingLine typed input typingInputField" id="sentenceInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the sentence..." />
         <div class="small muted" id="sentenceHint">Type the sentence in the text box. Spaces are optional (you can press Space to match a space). Mistakes highlight red on the passage; fix them to advance.</div>
@@ -398,6 +399,14 @@
             <option value="on">On</option>
           </select>
           <span class="small muted" id="backgroundVideoNote">Sakura video backdrop behind the UI.</span>
+        </label>
+
+        <label class="field">
+          <span>English translations</span>
+          <select id="englishTranslationsToggle">
+            <option value="on">Show</option>
+            <option value="off">Hide</option>
+          </select>
         </label>
 
         <label class="field">

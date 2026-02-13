@@ -14,7 +14,7 @@
     wordSets: "kkt_word_sets_v1",
   };
 
-  const BACKGROUND_VIDEO_SRC = "icons/Sakura.mp4";
+  const BACKGROUND_VIDEO_SOURCES = ["Sakura.mp4", "icons/Sakura.mp4", "https://cdn.coverr.co/videos/coverr-cherry-blossoms-1579/1080p.mp4"];
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   // On-screen keyboard layouts (US-ish physical codes). JIS has extra keys that may
@@ -729,7 +729,7 @@
       { display: "いちじかん", reading: "いちじかん", meaning: "one hour" },
       { display: "かう", reading: "かう", meaning: "to buy (～を)" },
       { display: "ゲーム", reading: "ゲーム", meaning: "game" },
-      { display: "ごはん", reading: "ごはん", meaning: "rice; meal" },
+      { display: "ごはん", reading: "ごはん", meaning: "(cooked) rice; meal" },
       { display: "ごめんなさい", reading: "ごめんなさい", meaning: "I'm sorry." },
       { display: "しゃしん", reading: "しゃしん", meaning: "picture; photograph" },
       { display: "それから", reading: "それから", meaning: "and then; after that" },
@@ -787,56 +787,75 @@
     return entries.map(normalizeWordEntry).filter(Boolean);
   }
 
+  function normalizeSentenceEntry(entry) {
+    if (typeof entry === "string") {
+      const text = entry.trim();
+      if (!text) return null;
+      return { text, meaning: "" };
+    }
+    if (!entry || typeof entry !== "object") return null;
+    const text = typeof entry.text === "string" ? entry.text.trim() : "";
+    const meaning = typeof entry.meaning === "string" ? entry.meaning.trim() : "";
+    if (!text) return null;
+    return { text, meaning };
+  }
+
+  function normalizeSentenceEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    return entries.map(normalizeSentenceEntry).filter(Boolean);
+  }
+
   const SENTENCE_LISTS = {
     basic: [
-      "わたしはがくせいです",
-      "きょうはいいてんきです",
-      "ねこがすきです",
-      "あしたともだちにあいます",
-      "みずをのみます",
-      "でんしゃでいきます",
-      "えいがをみにいきます",
-      "きのうはさむかったです",
-      "まいにちべんきょうします",
-      "これをよんでください",
-      "あさごはんにたまごをたべました",
-      "わたしはこうえんでさんぽします",
-      "ともだちといっしょにえいがをみました",
-      "ふゆはさむいですがあついおちゃがすきです",
-      "じてんしゃでまちまでいきます",
-      "ねるまえにほんをよみます",
-      "しゅうまつはうみへいきたいです",
-      "きのうははやくねました",
-      "いえでおんがくをききます",
-      "きょうはしごとがやすみです",
-      "あたらしいくつをかいました",
-      "みずをたくさんのみましょう",
-      "いぬがはしってきました",
-      "はなにみずをあげます",
-      "すずしいかぜがふいています",
-      "つくえのうえにほんがあります",
-      "でんしゃがこんでいます",
-      "えきでともだちをまちます",
-      "あたらしいことばをおぼえます",
-      "このみちはよるはくらいです",
-      "あめのあとにそらがきれいです",
-      "ひるやすみにさんどいっちをたべます",
-      "やさいをたくさんたべたいです",
-      "まいあさはやおきしています",
-      "せんせいがしゅくだいをだしました",
-      "こうえんでこどもがあそんでいます",
-      "わたしはりょこうのけいかくをたてます",
-      "かばんのなかにぺんがあります",
-      "あついひはみずあそびをします",
-      "ゆきがふるとまちがしずかになります",
-      "あかるいへやでべんきょうします",
-      "すきなうたをくちずさみます",
-      "つぎのばすはななじゅっぷんごです",
-      "まどをあけてそとをみます",
-      "しゅくだいはゆうがたにします",
-      "きょうはからだをうごかします"
+      { text: "わたしはがくせいです", meaning: "I am a student." },
+      { text: "きょうはいいてんきです", meaning: "The weather is nice today." },
+      { text: "ねこがすきです", meaning: "I like cats." },
+      { text: "あしたともだちにあいます", meaning: "I will meet a friend tomorrow." },
+      { text: "みずをのみます", meaning: "I drink water." },
+      { text: "でんしゃでいきます", meaning: "I go by train." },
+      { text: "えいがをみにいきます", meaning: "I am going to watch a movie." },
+      { text: "きのうはさむかったです", meaning: "It was cold yesterday." },
+      { text: "まいにちべんきょうします", meaning: "I study every day." },
+      { text: "これをよんでください", meaning: "Please read this." },
+      { text: "あさごはんにたまごをたべました", meaning: "I ate eggs for breakfast." },
+      { text: "わたしはこうえんでさんぽします", meaning: "I take a walk in the park." },
+      { text: "ともだちといっしょにえいがをみました", meaning: "I watched a movie with a friend." },
+      { text: "ふゆはさむいですがあついおちゃがすきです", meaning: "Winter is cold, but I like hot tea." },
+      { text: "じてんしゃでまちまでいきます", meaning: "I go to town by bicycle." },
+      { text: "ねるまえにほんをよみます", meaning: "I read a book before sleeping." },
+      { text: "しゅうまつはうみへいきたいです", meaning: "I want to go to the sea on the weekend." },
+      { text: "きのうははやくねました", meaning: "I went to bed early yesterday." },
+      { text: "いえでおんがくをききます", meaning: "I listen to music at home." },
+      { text: "きょうはしごとがやすみです", meaning: "I have the day off work today." },
+      { text: "あたらしいくつをかいました", meaning: "I bought new shoes." },
+      { text: "みずをたくさんのみましょう", meaning: "Let's drink plenty of water." },
+      { text: "いぬがはしってきました", meaning: "A dog came running." },
+      { text: "はなにみずをあげます", meaning: "I water the flowers." },
+      { text: "すずしいかぜがふいています", meaning: "A cool breeze is blowing." },
+      { text: "つくえのうえにほんがあります", meaning: "There is a book on the desk." },
+      { text: "でんしゃがこんでいます", meaning: "The train is crowded." },
+      { text: "えきでともだちをまちます", meaning: "I wait for my friend at the station." },
+      { text: "あたらしいことばをおぼえます", meaning: "I memorize new words." },
+      { text: "このみちはよるはくらいです", meaning: "This street is dark at night." },
+      { text: "あめのあとにそらがきれいです", meaning: "The sky is beautiful after the rain." },
+      { text: "ひるやすみにさんどいっちをたべます", meaning: "I eat a sandwich during lunch break." },
+      { text: "やさいをたくさんたべたいです", meaning: "I want to eat lots of vegetables." },
+      { text: "まいあさはやおきしています", meaning: "I wake up early every morning." },
+      { text: "せんせいがしゅくだいをだしました", meaning: "The teacher assigned homework." },
+      { text: "こうえんでこどもがあそんでいます", meaning: "Children are playing in the park." },
+      { text: "わたしはりょこうのけいかくをたてます", meaning: "I make a travel plan." },
+      { text: "かばんのなかにぺんがあります", meaning: "There is a pen in the bag." },
+      { text: "あついひはみずあそびをします", meaning: "On hot days, we play in water." },
+      { text: "ゆきがふるとまちがしずかになります", meaning: "When it snows, the town becomes quiet." },
+      { text: "あかるいへやでべんきょうします", meaning: "I study in a bright room." },
+      { text: "すきなうたをくちずさみます", meaning: "I hum my favorite song." },
+      { text: "つぎのばすはななじゅっぷんごです", meaning: "The next bus is in seventy minutes." },
+      { text: "まどをあけてそとをみます", meaning: "I open the window and look outside." },
+      { text: "しゅくだいはゆうがたにします", meaning: "I do homework in the evening." },
+      { text: "きょうはからだをうごかします", meaning: "I will move my body/exercise today." }
     ]
   };
+
 
 
   const defaultEnabledSets = () => {
@@ -857,7 +876,8 @@
     typingTimerEnabled: true,
     wordList: "basic",
     wordSetId: "",
-    backgroundVideo: "off"
+    backgroundVideo: "off",
+    showEnglishTranslations: true
   });
 
   function loadJSON(key, fallback) {
@@ -901,6 +921,7 @@
   if (!opts.wordList || !["basic", "classVocab", "all", "custom"].includes(opts.wordList)) opts.wordList = "basic";
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
   if (!["on", "off"].includes(opts.backgroundVideo)) opts.backgroundVideo = "off";
+  if (typeof opts.showEnglishTranslations !== "boolean") opts.showEnglishTranslations = true;
   let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
   let wordSets = normalizeWordSets(loadJSON(STORAGE.wordSets, defaultWordSets()));
@@ -994,15 +1015,23 @@
     video.muted = true;
     video.playsInline = true;
     video.preload = "auto";
-    video.src = BACKGROUND_VIDEO_SRC;
     video.setAttribute("playsinline", "");
     video.setAttribute("muted", "");
     video.setAttribute("autoplay", "");
     video.setAttribute("loop", "");
+    const sources = BACKGROUND_VIDEO_SOURCES.slice();
+    const applySource = () => {
+      const next = sources.shift();
+      if (!next) return;
+      video.src = next;
+      video.load();
+      attachVideoFallback(video);
+    };
+    video.addEventListener("error", applySource);
+    applySource();
     const overlay = document.createElement("div");
     overlay.className = "background-video__overlay";
     backgroundVideoContainer.append(video, overlay);
-    attachVideoFallback(video);
   }
 
   $$("[data-nav]").forEach(btn => btn.addEventListener("click", () => nav(btn.dataset.nav)));
@@ -1554,6 +1583,7 @@
   let suppressWordInput = false;
 
   let sentenceTarget = "", sentenceTyped = "";
+  let sentenceMeaning = "";
   let sDone=0, sCorrect=0, sWrong=0;
   let sentenceWrongIndices = new Set();
   let sentenceCorrectIndices = new Set();
@@ -1571,7 +1601,7 @@
     }
     const meaningEl = $("#wordMeaning");
     if (meaningEl) {
-      const showMeaning = !!wordTargetMeaning;
+      const showMeaning = !!wordTargetMeaning && opts.showEnglishTranslations;
       meaningEl.textContent = showMeaning ? `Meaning: ${wordTargetMeaning}` : "";
       meaningEl.classList.toggle("hidden", !showMeaning);
     }
@@ -1586,6 +1616,12 @@
   }
   function setSentenceUI() {
     renderPassage($("#sentenceTarget"), sentenceTarget, sentenceTyped.length, sentenceWrongIndices, sentenceCorrectIndices);
+    const sentenceMeaningEl = $("#sentenceMeaning");
+    if (sentenceMeaningEl) {
+      const showMeaning = !!sentenceMeaning && opts.showEnglishTranslations;
+      sentenceMeaningEl.textContent = showMeaning ? `Meaning: ${sentenceMeaning}` : "";
+      sentenceMeaningEl.classList.toggle("hidden", !showMeaning);
+    }
     $("#sentenceTyped").textContent = sentenceTyped || "";
     const sentenceInputEl = $("#sentenceInput");
     if (sentenceInputEl.value !== sentenceInput) sentenceInputEl.value = sentenceInput;
@@ -1687,8 +1723,10 @@
 
   function pickSentence() {
     const list = ($("#sentenceListSelect").value || "basic");
-    const candidates = (SENTENCE_LISTS[list] || SENTENCE_LISTS.basic).slice();
-    sentenceTarget = candidates[Math.floor(Math.random()*candidates.length)];
+    const candidates = normalizeSentenceEntries((SENTENCE_LISTS[list] || SENTENCE_LISTS.basic).slice());
+    const sentenceEntry = candidates[Math.floor(Math.random()*candidates.length)];
+    sentenceTarget = sentenceEntry.text;
+    sentenceMeaning = sentenceEntry.meaning;
     sentenceTyped = "";
     sentenceWrongIndices = new Set();
     sentenceCorrectIndices = new Set();
@@ -1866,6 +1904,7 @@
     $("#btnSentencePause").disabled = true;
     $("#btnSentenceStop").disabled = true;
     sentenceTarget = ""; sentenceTyped = "";
+    sentenceMeaning = "";
     sentenceWrongIndices = new Set();
     sentenceCorrectIndices = new Set();
     sentenceInput = "";
@@ -2310,6 +2349,7 @@
     $("#keyboardLayoutSelect").value = opts.keyboardLayout || "windows";
     $("#fingerGuideToggle").value = opts.showFingerGuide ? "on" : "off";
     $("#typingTimerToggle").value = opts.typingTimerEnabled ? "on" : "off";
+    $("#englishTranslationsToggle").value = opts.showEnglishTranslations ? "on" : "off";
     $("#tTimer").disabled = !opts.typingTimerEnabled;
     syncBackgroundVideoUI();
 
@@ -2372,6 +2412,13 @@
       }
     }
     setTypingUI();
+  });
+
+  $("#englishTranslationsToggle").addEventListener("change", (e) => {
+    opts.showEnglishTranslations = e.target.value === "on";
+    saveJSON(STORAGE.opts, opts);
+    setWordUI();
+    setSentenceUI();
   });
 
   $("#backgroundVideoSelect").addEventListener("change", (e) => {
@@ -2565,9 +2612,19 @@
 
   // PWA register
   if ("serviceWorker" in navigator) {
+    let didRefreshForNewSw = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (didRefreshForNewSw) return;
+      didRefreshForNewSw = true;
+      window.location.reload();
+    });
+
     window.addEventListener("load", async () => {
       try {
-        const registration = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });
+        const registration = await navigator.serviceWorker.register("./sw.js", {
+          scope: "./",
+          updateViaCache: "none"
+        });
         registration.update().catch(() => {});
       } catch (_) {}
     });
