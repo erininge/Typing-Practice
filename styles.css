@@ -440,6 +440,9 @@ code{color: var(--accent)}
   border:var(--borderWidth) solid var(--line);
   background:color-mix(in srgb, var(--overlaySoft) 80%, transparent);
 }
+.keyboard--macbook-pro .krow{
+  justify-content:center;
+}
 .keyboard--macbook-pro .krow:first-child .key{
   min-height:36px;
   border-radius:10px;
