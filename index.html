@@ -20,7 +20,7 @@
       </div>
     </div>
       <div class="meta">
-        <span class="pill">v1.2.16</span>
+        <span class="pill">v1.2.17</span>
         <span class="pill">sakura aura</span>
       </div>
   </header>
@@ -190,6 +190,8 @@
 
       <div class="typingPanel">
         <div class="typingLine" id="wordTarget">—</div>
+        <div class="small muted wordMeta hidden" id="wordDisplay"></div>
+        <div class="small muted wordMeta hidden" id="wordMeaning"></div>
         <div class="typingLine typed inputDisplay" id="wordTyped"></div>
         <input class="typingLine typed input typingInputField" id="wordInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the word..." />
         <div class="small muted" id="wordHint">Type the word in the text box. Mistakes highlight red on the target line; fix them to advance.</div>
@@ -232,6 +234,7 @@
             <span>Word list</span>
             <select id="wordListSelect">
               <option value="basic">Basic (built-in)</option>
+              <option value="classVocab">Class Vocab</option>
               <option value="all">All enabled kana (random)</option>
               <option value="custom">Custom set</option>
             </select>
