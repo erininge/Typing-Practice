@@ -2565,8 +2565,11 @@
 
   // PWA register
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").catch(() => {});
+    window.addEventListener("load", async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });
+        registration.update().catch(() => {});
+      } catch (_) {}
     });
   }
 })();
