@@ -210,6 +210,95 @@
   const KEYBOARD_LAYOUTS = {
     "windows": { label: "Windows", main: WINDOWS_ROWS },
     "mac": { label: "Mac", main: MAC_ROWS },
+    "macbook-pro": {
+      label: "MacBook Pro (JIS-style)",
+      main: [
+        [
+          { code:"Escape", label:"esc" },
+          { code:"TouchBarControls", label:"◁  ▷  ☼", wide:"wider", displayOnly:true },
+          { code:"TouchBarMedia", label:"◀  ▶  ♪", wide:"wider", displayOnly:true },
+          { code:"TouchBarSiri", label:"siri", displayOnly:true },
+          { code:"TouchBarStrip", label:"Touch Bar", wide:"touchbar", displayOnly:true },
+          { code:"Power", label:"⏻", displayOnly:true },
+        ],
+        [
+          {code:"Backquote", label:"半角/全角"},
+          {code:"Digit1", label:"1"},
+          {code:"Digit2", label:"2"},
+          {code:"Digit3", label:"3"},
+          {code:"Digit4", label:"4"},
+          {code:"Digit5", label:"5"},
+          {code:"Digit6", label:"6"},
+          {code:"Digit7", label:"7"},
+          {code:"Digit8", label:"8"},
+          {code:"Digit9", label:"9"},
+          {code:"Digit0", label:"0"},
+          {code:"Minus", label:"-"},
+          {code:"Equal", label:"^"},
+          {code:"IntlYen", label:"¥"},
+          {code:"Backspace", label:"delete", wide:"wide"},
+        ],
+        [
+          {code:"Tab", label:"tab", wide:"wide"},
+          {code:"KeyQ", label:"Q"},
+          {code:"KeyW", label:"W"},
+          {code:"KeyE", label:"E"},
+          {code:"KeyR", label:"R"},
+          {code:"KeyT", label:"T"},
+          {code:"KeyY", label:"Y"},
+          {code:"KeyU", label:"U"},
+          {code:"KeyI", label:"I"},
+          {code:"KeyO", label:"O"},
+          {code:"KeyP", label:"P"},
+          {code:"BracketLeft", label:"@"},
+          {code:"BracketRight", label:"["},
+          {code:"Enter", label:"return", wide:"wider"},
+        ],
+        [
+          {code:"CapsLock", label:"caps lock", wide:"wider"},
+          {code:"KeyA", label:"A"},
+          {code:"KeyS", label:"S"},
+          {code:"KeyD", label:"D"},
+          {code:"KeyF", label:"F"},
+          {code:"KeyG", label:"G"},
+          {code:"KeyH", label:"H"},
+          {code:"KeyJ", label:"J"},
+          {code:"KeyK", label:"K"},
+          {code:"KeyL", label:"L"},
+          {code:"Semicolon", label:";"},
+          {code:"Quote", label:":"},
+          {code:"IntlBackslash", label:"]"},
+        ],
+        [
+          {code:"ShiftLeft", label:"shift", wide:"wider"},
+          {code:"KeyZ", label:"Z"},
+          {code:"KeyX", label:"X"},
+          {code:"KeyC", label:"C"},
+          {code:"KeyV", label:"V"},
+          {code:"KeyB", label:"B"},
+          {code:"KeyN", label:"N"},
+          {code:"KeyM", label:"M"},
+          {code:"Comma", label:","},
+          {code:"Period", label:"."},
+          {code:"Slash", label:"/"},
+          {code:"IntlRo", label:"ろ"},
+          {code:"ShiftRight", label:"shift", wide:"wide"},
+        ],
+        [
+          {code:"Fn", label:"fn", displayOnly:true},
+          {code:"ControlLeft", label:"control", wide:"wide"},
+          {code:"AltLeft", label:"option", wide:"wide"},
+          {code:"MetaLeft", label:"command", wide:"wide"},
+          {code:"Space", label:"", wide:"space"},
+          {code:"MetaRight", label:"command", wide:"wide"},
+          {code:"AltRight", label:"option", wide:"wide"},
+          {code:"ArrowLeft", label:"◀"},
+          {code:"ArrowDown", label:"▼"},
+          {code:"ArrowUp", label:"▲"},
+          {code:"ArrowRight", label:"▶"},
+        ]
+      ]
+    },
     "windows-numpad": { label: "Windows + numpad", main: WINDOWS_ROWS, numpad: NUMPAD_ROWS },
     "mac-numpad": { label: "Mac + numpad", main: MAC_ROWS, numpad: NUMPAD_ROWS },
   };
@@ -1058,10 +1147,11 @@
         if (key.hidden) continue;
         const k = document.createElement("div");
         k.className = "key";
+        if (key.displayOnly) k.classList.add("displayOnly");
         if (key.wide) k.classList.add(key.wide);
-        k.dataset.code = key.code;
+        if (!key.displayOnly) k.dataset.code = key.code;
         const finger = FINGER_MAP[key.code];
-        if (finger) k.dataset.finger = finger;
+        if (!key.displayOnly && finger) k.dataset.finger = finger;
         if (HOME_KEYS.has(key.code)) k.classList.add("home");
         if (targetCode && key.code === targetCode) k.classList.add("target");
         const top = document.createElement("div");
@@ -1083,6 +1173,7 @@
 
   function buildKeyboard(el, targetCode=null) {
     el.innerHTML = "";
+    el.classList.toggle("keyboard--macbook-pro", opts.keyboardLayout === "macbook-pro");
     const layout = KEYBOARD_LAYOUTS[opts.keyboardLayout] || KEYBOARD_LAYOUTS["windows"];
     const mainBlock = document.createElement("div");
     mainBlock.className = "kbdBlock";
