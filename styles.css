@@ -141,6 +141,15 @@ body{
   filter: brightness(1.35) saturate(1.35) contrast(1.02);
   mix-blend-mode: screen;
 }
+.background-video__fallback{
+  position:absolute;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  opacity:0.8;
+  filter: saturate(1.1);
+  mix-blend-mode: screen;
+}
 .background-video__overlay{
   position:absolute;
   inset:0;
