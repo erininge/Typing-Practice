@@ -14,7 +14,7 @@
     wordSets: "kkt_word_sets_v1",
   };
 
-  const BACKGROUND_VIDEO_SOURCES = ["Sakura.mp4", "icons/Sakura.mp4", "https://cdn.coverr.co/videos/coverr-cherry-blossoms-1579/1080p.mp4"];
+  const BACKGROUND_VIDEO_SOURCES = ["Sakura.mp4", "icons/Sakura.mp4"];
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   // On-screen keyboard layouts (US-ish physical codes). JIS has extra keys that may
@@ -1093,8 +1093,95 @@
     });
   }
 
+  function renderAnimatedBackgroundFallback() {
+    if (!backgroundVideoContainer) return;
+    const canvas = document.createElement("canvas");
+    canvas.className = "background-video__fallback";
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const petals = [];
+    const PETAL_COUNT = 36;
+    let rafId = null;
+
+    const resize = () => {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const width = Math.max(window.innerWidth, 1);
+      const height = Math.max(window.innerHeight, 1);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const spawnPetal = (yStart = null) => ({
+      x: Math.random() * window.innerWidth,
+      y: yStart ?? (Math.random() * window.innerHeight),
+      size: 6 + Math.random() * 9,
+      drift: -0.4 + Math.random() * 0.8,
+      speed: 0.45 + Math.random() * 0.8,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.03,
+      rotate: Math.random() * Math.PI * 2,
+      rotateSpeed: -0.02 + Math.random() * 0.04,
+      alpha: 0.22 + Math.random() * 0.18
+    });
+
+    const init = () => {
+      petals.length = 0;
+      for (let i = 0; i < PETAL_COUNT; i += 1) petals.push(spawnPetal());
+    };
+
+    const drawPetal = (p) => {
+      const bloom = 0.65 + Math.sin(p.wobble) * 0.1;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotate);
+      ctx.scale(1, bloom);
+      ctx.fillStyle = `rgba(255, 175, 205, ${p.alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size * 0.7);
+      ctx.bezierCurveTo(p.size * 0.9, -p.size * 0.7, p.size * 0.95, p.size * 0.7, 0, p.size);
+      ctx.bezierCurveTo(-p.size * 0.95, p.size * 0.7, -p.size * 0.9, -p.size * 0.7, 0, -p.size * 0.7);
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const step = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < petals.length; i += 1) {
+        const p = petals[i];
+        p.wobble += p.wobbleSpeed;
+        p.rotate += p.rotateSpeed;
+        p.y += p.speed;
+        p.x += p.drift + Math.sin(p.wobble) * 0.35;
+        if (p.y > height + 20 || p.x < -20 || p.x > width + 20) {
+          petals[i] = spawnPetal(-20);
+        }
+        drawPetal(petals[i]);
+      }
+      rafId = window.requestAnimationFrame(step);
+    };
+
+    resize();
+    init();
+    step();
+    window.addEventListener("resize", resize, { passive: true });
+
+    canvas.cleanup = () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", resize);
+    };
+    backgroundVideoContainer.appendChild(canvas);
+  }
+
   function renderBackgroundVideo() {
     if (!backgroundVideoContainer) return;
+    const oldFallback = backgroundVideoContainer.querySelector(".background-video__fallback");
+    if (oldFallback && typeof oldFallback.cleanup === "function") oldFallback.cleanup();
     backgroundVideoContainer.innerHTML = "";
     if (!shouldShowBackgroundVideo()) return;
     const video = document.createElement("video");
@@ -1111,7 +1198,10 @@
     const sources = BACKGROUND_VIDEO_SOURCES.slice();
     const applySource = () => {
       const next = sources.shift();
-      if (!next) return;
+      if (!next) {
+        renderAnimatedBackgroundFallback();
+        return;
+      }
       video.src = next;
       video.load();
       attachVideoFallback(video);
@@ -1185,6 +1275,43 @@
       buildKeyboardRows(padBlock, layout.numpad, targetCode);
       el.appendChild(padBlock);
     }
+  }
+
+  function getVisibleCodesForLayout(layoutId = opts.keyboardLayout) {
+    const layout = KEYBOARD_LAYOUTS[layoutId] || KEYBOARD_LAYOUTS.windows;
+    const visibleCodes = new Set();
+    const collect = (rows) => {
+      if (!Array.isArray(rows)) return;
+      for (const row of rows) {
+        for (const key of row) {
+          if (!key || key.displayOnly || !key.code) continue;
+          visibleCodes.add(key.code);
+        }
+      }
+    };
+    collect(layout.main);
+    collect(layout.numpad);
+    return visibleCodes;
+  }
+
+  function resolveCodeForKana(kana, { preferVisibleLayout = true } = {}) {
+    if (!kana) return null;
+    if (kana === " ") return "Space";
+
+    const matchingCodes = Object.keys(map).filter((code) => map[code] === kana);
+    if (matchingCodes.length) {
+      if (!preferVisibleLayout) return matchingCodes[0];
+      const visibleCodes = getVisibleCodesForLayout();
+      const visibleMatch = matchingCodes.find((code) => visibleCodes.has(code));
+      return visibleMatch || matchingCodes[0];
+    }
+
+    const decomp = decomposeVoiced(kana);
+    if (decomp && decomp.base) {
+      return resolveCodeForKana(decomp.base, { preferVisibleLayout });
+    }
+
+    return null;
   }
   function flashKey(code) {
     const keys = $$(`.key[data-code="${code}"]`);
@@ -1368,7 +1495,7 @@
   function pickTarget() {
     const pool = getPool({ useMap: opts.inputMode !== "native" });
     targetKana = pool[Math.floor(Math.random() * pool.length)];
-    targetCode = Object.keys(map).find(code => map[code] === targetKana) || null;
+    targetCode = resolveCodeForKana(targetKana);
     $("#targetKana").textContent = targetKana || "—";
     $("#feedback").textContent = "";
     $("#feedback").className = "feedback";
@@ -1677,7 +1804,7 @@
   function nextNeededCode() {
     const nk = nextNeededKana();
     if (!nk) return null;
-    return Object.keys(map).find(code => map[code] === nk) || null;
+    return resolveCodeForKana(nk);
   }
 
   function clampInt(v, min, max) {
@@ -1757,9 +1884,7 @@
     return target.charAt(typed.length) || null;
   }
   function codeForKanaChar(ch) {
-    if (!ch) return null;
-    if (ch === " ") return "Space";
-    return Object.keys(map).find(code => map[code] === ch) || null;
+    return resolveCodeForKana(ch);
   }
 
   const wordHintDefault = "Type the word in the text box. Mistakes highlight red on the target line; fix them to advance.";
