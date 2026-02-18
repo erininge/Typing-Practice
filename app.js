@@ -20,7 +20,7 @@
   // On-screen keyboard layouts (US-ish physical codes). JIS has extra keys that may
   // surface as IntlYen / IntlRo / etc depending on device.
   const WINDOWS_ROWS = [
-    // Row 1 (digits)
+    // Row 1 (JIS digits)
     [
       {code:"Backquote", label:"`"},
       {code:"Digit1", label:"1"},
@@ -35,6 +35,7 @@
       {code:"Digit0", label:"0"},
       {code:"Minus", label:"-"},
       {code:"Equal", label:"="},
+      {code:"IntlYen", label:"¥"},
       {code:"Backspace", label:"Bksp", wide:"wider"},
     ],
     // Row 2 (Q row)
@@ -52,7 +53,6 @@
       {code:"KeyP", label:"P"},
       {code:"BracketLeft", label:"["},
       {code:"BracketRight", label:"]"},
-      {code:"Backslash", label:"\\"},
     ],
     // Row 3 (A row)
     [
@@ -68,6 +68,7 @@
       {code:"KeyL", label:"L"},
       {code:"Semicolon", label:";"},
       {code:"Quote", label:"'"},
+      {code:"Backslash", label:"\\"},
       {code:"Enter", label:"Enter", wide:"wider"},
     ],
     // Row 4 (Z row)
@@ -83,6 +84,7 @@
       {code:"Comma", label:","},
       {code:"Period", label:"."},
       {code:"Slash", label:"/"},
+      {code:"IntlRo", label:"ろ"},
       {code:"ShiftRight", label:"Shift", wide:"wider"},
     ],
     // Row 5 (space)
@@ -90,7 +92,10 @@
       {code:"ControlLeft", label:"Ctrl", wide:"wide"},
       {code:"MetaLeft", label:"Win", wide:"wide"},
       {code:"AltLeft", label:"Alt", wide:"wide"},
+      {code:"NonConvert", label:"無", wide:"wide"},
       {code:"Space", label:"Space", wide:"space"},
+      {code:"Convert", label:"変", wide:"wide"},
+      {code:"KanaMode", label:"かな", wide:"wide"},
       {code:"AltRight", label:"Alt", wide:"wide"},
       {code:"MetaRight", label:"Win", wide:"wide"},
       {code:"ControlRight", label:"Ctrl", wide:"wide"},
@@ -317,6 +322,7 @@
     Digit0: "rp",
     Minus: "rp",
     Equal: "rp",
+    IntlYen: "rp",
     Backspace: "rp",
     Tab: "lp",
     KeyQ: "lp",
@@ -332,6 +338,7 @@
     BracketLeft: "rp",
     BracketRight: "rp",
     Backslash: "rp",
+    IntlRo: "rp",
     CapsLock: "lp",
     KeyA: "lp",
     KeyS: "lr",
@@ -360,7 +367,10 @@
     ControlLeft: "lp",
     MetaLeft: "li",
     AltLeft: "li",
+    NonConvert: "th",
     Space: "th",
+    Convert: "th",
+    KanaMode: "th",
     AltRight: "ri",
     MetaRight: "ri",
     ControlRight: "rp",
@@ -403,7 +413,8 @@
       Digit9: "よ",
       Digit0: "わ",
       Minus: "ほ",
-      Equal: "゜",
+      Equal: "へ",
+      IntlYen: "ー",
       // Q row
       KeyQ: "た",
       KeyW: "て",
@@ -416,8 +427,7 @@
       KeyO: "ら",
       KeyP: "せ",
       BracketLeft: "゛",
-      BracketRight: "む",
-      Backslash: "へ",
+      BracketRight: "゜",
       // A row
       KeyA: "ち",
       KeyS: "と",
@@ -430,6 +440,7 @@
       KeyL: "り",
       Semicolon: "れ",
       Quote: "け",
+      Backslash: "む",
       // Z row
       KeyZ: "つ",
       KeyX: "さ",
@@ -441,6 +452,7 @@
       Comma: "ね",
       Period: "る",
       Slash: "め",
+      IntlRo: "ろ",
       // space is not kana
     },
     us: {
@@ -1011,7 +1023,16 @@
   if (typeof opts.wordSetId !== "string") opts.wordSetId = "";
   if (!["on", "off"].includes(opts.backgroundVideo)) opts.backgroundVideo = "off";
   if (typeof opts.showEnglishTranslations !== "boolean") opts.showEnglishTranslations = true;
-  let map = loadJSON(STORAGE.map, DEFAULT_MAPS[opts.layout] || DEFAULT_MAPS.jis);
+  const mergeDefaultMap = (existingMap, layoutId) => {
+    const defaults = DEFAULT_MAPS[layoutId] || DEFAULT_MAPS.jis;
+    const merged = { ...defaults, ...(existingMap || {}) };
+    for (const [code, kana] of Object.entries(defaults)) {
+      if (!(code in merged) || merged[code] === "") merged[code] = kana;
+    }
+    return merged;
+  };
+
+  let map = mergeDefaultMap(loadJSON(STORAGE.map, null), opts.layout);
   let enabledSets = loadJSON(STORAGE.sets, defaultEnabledSets());
   let wordSets = normalizeWordSets(loadJSON(STORAGE.wordSets, defaultWordSets()));
   let stats = loadJSON(STORAGE.stats, {
