@@ -2880,14 +2880,61 @@
   renderBackgroundVideo();
   nav("home");
 
-  // PWA register
+  // PWA register + manual refresh/update handling
+  const refreshBtn = $("#btnRefreshApp");
   if ("serviceWorker" in navigator) {
     let didRefreshForNewSw = false;
+    let activeRegistration = null;
+
+    const setRefreshButtonState = (isBusy, text) => {
+      if (!refreshBtn) return;
+      refreshBtn.disabled = !!isBusy;
+      refreshBtn.textContent = text || "Refresh app";
+    };
+
+    const activateWaitingWorker = (registration) => {
+      if (!registration || !registration.waiting) return false;
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      return true;
+    };
+
+    const forceRefreshApp = async () => {
+      setRefreshButtonState(true, "Refreshing…");
+      try {
+        const registration = activeRegistration || await navigator.serviceWorker.getRegistration("./");
+        if (!registration) {
+          window.location.reload();
+          return;
+        }
+
+        activeRegistration = registration;
+        await registration.update();
+
+        if (activateWaitingWorker(registration)) {
+          setRefreshButtonState(true, "Applying update…");
+          return;
+        }
+
+        // No waiting worker found; force a normal navigation with a cache-buster.
+        const url = new URL(window.location.href);
+        url.searchParams.set("refresh", String(Date.now()));
+        window.location.replace(url.toString());
+      } catch (_) {
+        window.location.reload();
+      }
+    };
+
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (didRefreshForNewSw) return;
       didRefreshForNewSw = true;
       window.location.reload();
     });
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => {
+        forceRefreshApp().catch(() => window.location.reload());
+      });
+    }
 
     window.addEventListener("load", async () => {
       try {
@@ -2895,8 +2942,24 @@
           scope: "./",
           updateViaCache: "none"
         });
+        activeRegistration = registration;
+
+        registration.addEventListener("updatefound", () => {
+          const installing = registration.installing;
+          if (!installing) return;
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed" && navigator.serviceWorker.controller) {
+              activateWaitingWorker(registration);
+            }
+          });
+        });
+
         registration.update().catch(() => {});
-      } catch (_) {}
+      } catch (_) {
+        setRefreshButtonState(false, "Refresh app");
+      }
     });
+  } else if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => window.location.reload());
   }
 })();
