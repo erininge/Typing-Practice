@@ -1,5 +1,5 @@
 // Service Worker (GitHub Pages-safe, update-friendly)
-const VERSION = "v1.2.23";
+const VERSION = "v1.2.24";
 const CACHE_NAME = `typing-practice-${VERSION}`;
 const PRECACHE_URLS = [
   "./",
@@ -24,6 +24,12 @@ self.addEventListener("activate", (event) => {
     await Promise.all(keys.map((key) => (key === CACHE_NAME ? null : caches.delete(key))));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 async function networkFirst(request) {

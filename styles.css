@@ -309,6 +309,9 @@ h3{margin:0 0 10px 0}
   background: var(--dangerBg);
 }
 .smallBtn{padding:10px 12px}
+.refreshBtn{
+  white-space:nowrap;
+}
 
 .fileBtn{position:relative; overflow:hidden}
 .fileBtn input{
